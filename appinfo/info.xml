@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>markdownsite</id>
+	<name>MarkdownSite</name>
+	<summary lang="en">Browse a folder of Markdown as a wiki</summary>
+	<description lang="en"><![CDATA[
+Turn any folder of Markdown files into a browsable, read-only wiki site inside Nextcloud.
+Supports Obsidian-style wikilinks, embeds and YAML frontmatter. Links resolve by path,
+so a synced Obsidian vault or any Markdown folder just works. Content stays editable in
+the Files app or via desktop sync; the reader reflects changes live.
+	]]></description>
+	<version>0.1.0</version>
+	<licence>AGPL-3.0-or-later</licence>
+	<author mail="qtld@pm.me" homepage="https://github.com/qtld88">QTL</author>
+	<namespace>MarkdownSite</namespace>
+	<category>office</category>
+	<category>organization</category>
+	<website>https://github.com/qtld88/markdownsite</website>
+	<bugs>https://github.com/qtld88/markdownsite/issues</bugs>
+	<dependencies>
+		<nextcloud min-version="28" max-version="31"/>
+		<php min-version="8.1" max-version="8.4"/>
+	</dependencies>
+	<navigations>
+		<navigation>
+			<name>MarkdownSite</name>
+			<route>markdownsite.page.index</route>
+			<icon>app.svg</icon>
+			<order>10</order>
+		</navigation>
+	</navigations>
+</info>
