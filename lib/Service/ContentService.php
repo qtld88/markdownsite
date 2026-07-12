@@ -46,7 +46,9 @@ class ContentService {
 		$relPath = trim($relPath, '/');
 		$node = $relPath === '' ? $root : $root->get($relPath);
 		// Guard: node must be inside root.
-		if (!str_starts_with($node->getPath(), $root->getPath())) {
+		$rootPath = rtrim($root->getPath(), '/');
+		$nodePath = $node->getPath();
+		if ($nodePath !== $rootPath && !str_starts_with($nodePath, $rootPath . '/')) {
 			throw new NotFoundException($relPath);
 		}
 		return $node;

@@ -55,10 +55,12 @@ export default {
 			// Resolve fileId from path via the Files API.
 			const { default: axios } = await import('@nextcloud/axios')
 			const { generateRemoteUrl } = await import('@nextcloud/router')
+			const encPath = path.split('/').map(encodeURIComponent).join('/')
 			const res = await axios({
 				method: 'PROPFIND',
-				url: generateRemoteUrl('dav/files/' + (window.OC?.getCurrentUser()?.uid ?? '') + path),
+				url: generateRemoteUrl('dav/files/' + (window.OC?.getCurrentUser()?.uid ?? '') + encPath),
 				data: '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:fileid xmlns:d="http://owncloud.org/ns"/></d:prop></d:propfind>',
+				headers: { Depth: '0', 'Content-Type': 'application/xml' },
 			})
 			const m = String(res.data).match(/<[^>]*fileid>(\d+)</i)
 			this.pickedFileId = m ? Number(m[1]) : null

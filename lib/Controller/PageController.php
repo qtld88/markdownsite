@@ -62,7 +62,7 @@ class PageController extends Controller {
 		}
 		try {
 			$raw = $this->content->getPageContent($root, $path);
-		} catch (NotFoundException) {
+		} catch (\OCP\Files\NotFoundException | \OCP\Files\InvalidPathException | \OCP\Files\NotPermittedException) {
 			return new JSONResponse(['error' => 'page-not-found', 'path' => $path], 404);
 		}
 		$currentDir = trim(dirname($path) === '.' ? '' : dirname($path), '/');

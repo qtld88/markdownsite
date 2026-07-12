@@ -44,7 +44,7 @@ class AssetController extends Controller {
 		}
 		try {
 			$node = $this->content->getChild($root, $path);
-		} catch (NotFoundException) {
+		} catch (\OCP\Files\NotFoundException | \OCP\Files\InvalidPathException | \OCP\Files\NotPermittedException) {
 			return new NotFoundResponse();
 		}
 		if (!($node instanceof File)) {
