@@ -1,0 +1,35 @@
+{
+	"name": "markdownsite",
+	"private": true,
+	"engines": {
+		"node": ">=20",
+		"npm": ">=9"
+	},
+	"scripts": {
+		"dev": "webpack --node-env development --progress",
+		"watch": "webpack --node-env development --progress --watch",
+		"build": "webpack --node-env production --progress",
+		"lint": "eslint src --ext .vue,.js",
+		"lint:fix": "eslint src --ext .vue,.js --fix"
+	},
+	"dependencies": {
+		"@nextcloud/axios": "^2.4.0",
+		"@nextcloud/dialogs": "^7.3.0",
+		"@nextcloud/l10n": "^3.0.0",
+		"@nextcloud/router": "^3.0.0",
+		"@nextcloud/vue": "^9.8.0",
+		"pinia": "^3.0.4",
+		"vue": "^3.4.0",
+		"vue-router": "^4.2.0"
+	},
+	"devDependencies": {
+		"@nextcloud/browserslist-config": "^3.0.0",
+		"@nextcloud/webpack-vue-config": "^6.0.0",
+		"browserslist": "^4.23.0",
+		"eslint": "^8.56.0",
+		"eslint-plugin-vue": "^9.20.0",
+		"terser-webpack-plugin": "^5.3.17",
+		"webpack": "^5.90.0",
+		"webpack-cli": "^6.0.1"
+	}
+}
