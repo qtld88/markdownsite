@@ -26,7 +26,7 @@
 
 <script>
 import { NcAppContent, NcButton } from '@nextcloud/vue'
-import { getFilePickerBuilder } from '@nextcloud/dialogs'
+import { getFilePickerBuilder, FilePickerType } from '@nextcloud/dialogs'
 import { translate as t } from '@nextcloud/l10n'
 import { useSitesStore } from '../stores/sites.js'
 
@@ -45,25 +45,15 @@ export default {
 	methods: {
 		async pickFolder() {
 			const picker = getFilePickerBuilder(t('markdownsite', 'Pick the wiki folder'))
-				.setMultiSelect(false)
-				.addMimeTypeFilter('httpd/unix-directory')
-				.allowDirectories()
+				.setMimeTypeFilter(['httpd/unix-directory'])
+				.allowDirectories(true)
+				.setType(FilePickerType.Choose)
 				.build()
-			const paths = await picker.pick()
-			const path = Array.isArray(paths) ? paths[0] : paths
-			this.pickedPath = path
-			// Resolve fileId from path via the Files API.
-			const { default: axios } = await import('@nextcloud/axios')
-			const { generateRemoteUrl } = await import('@nextcloud/router')
-			const encPath = path.split('/').map(encodeURIComponent).join('/')
-			const res = await axios({
-				method: 'PROPFIND',
-				url: generateRemoteUrl('dav/files/' + (window.OC?.getCurrentUser()?.uid ?? '') + encPath),
-				data: '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:fileid xmlns:d="http://owncloud.org/ns"/></d:prop></d:propfind>',
-				headers: { Depth: '0', 'Content-Type': 'application/xml' },
-			})
-			const m = String(res.data).match(/<[^>]*fileid>(\d+)</i)
-			this.pickedFileId = m ? Number(m[1]) : null
+			const nodes = await picker.pickNodes()
+			const node = Array.isArray(nodes) ? nodes[0] : nodes
+			if (!node) { return }
+			this.pickedPath = node.path
+			this.pickedFileId = node.fileid ?? null
 		},
 		async create() {
 			await this.store.add({ name: this.name, rootFileId: this.pickedFileId, rootHintPath: this.pickedPath })
