@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OCA\MarkdownSite\Controller;
+
+use OCA\MarkdownSite\Db\Site;
+use OCA\MarkdownSite\Db\SiteMapper;
+use OCA\MarkdownSite\Db\SiteShare;
+use OCA\MarkdownSite\Db\SiteShareMapper;
+use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\JSONResponse;
+use OCP\Files\IRootFolder;
+use OCP\IGroupManager;
+use OCP\IRequest;
+use OCP\IUserSession;
+
+class SiteController extends Controller {
+	public function __construct(
+		IRequest $request,
+		private SiteMapper $sites,
+		private SiteShareMapper $shares,
+		private IUserSession $userSession,
+		private IGroupManager $groupManager,
+		private IRootFolder $rootFolder,
+	) {
+		parent::__construct('markdownsite', $request);
+	}
+
+	#[NoAdminRequired]
+	public function index(): JSONResponse {
+		$user = $this->userSession->getUser();
+		if ($user === null) {
+			return new JSONResponse(['error' => 'unauthenticated'], 401);
+		}
+		$uid = $user->getUID();
+		$groups = $this->groupManager->getUserGroupIds($user);
+		$userFolder = $this->rootFolder->getUserFolder($uid);
+		$out = [];
+		foreach ($this->sites->findVisible($uid, $groups) as $site) {
+			// Only include sites whose root the viewer can actually access.
+			if (count($userFolder->getById($site->getRootFileId())) === 0) {
+				continue;
+			}
+			$out[] = $site->toArray();
+		}
+		return new JSONResponse($out);
+	}
+
+	#[NoAdminRequired]
+	public function create(string $name, int $rootFileId, string $rootHintPath = '', ?string $icon = null): JSONResponse {
+		$user = $this->userSession->getUser();
+		if ($user === null) {
+			return new JSONResponse(['error' => 'unauthenticated'], 401);
+		}
+		$uid = $user->getUID();
+		// Validate the folder is accessible to the creator.
+		$userFolder = $this->rootFolder->getUserFolder($uid);
+		$nodes = $userFolder->getById($rootFileId);
+		if (count($nodes) === 0 || !($nodes[0] instanceof \OCP\Files\Folder)) {
+			return new JSONResponse(['error' => 'folder-not-found'], 400);
+		}
+		$site = new Site();
+		$site->setOwnerUid($uid);
+		$site->setName($name);
+		$site->setIcon($icon);
+		$site->setRootFileId($rootFileId);
+		$site->setRootHintPath($rootHintPath);
+		$site->setCreatedAt(time());
+		$site = $this->sites->insert($site);
+		return new JSONResponse($site->toArray());
+	}
+
+	#[NoAdminRequired]
+	public function destroy(int $id): JSONResponse {
+		$site = $this->requireOwned($id);
+		if ($site instanceof JSONResponse) {
+			return $site;
+		}
+		$this->shares->deleteBySite($id);
+		$this->sites->delete($site);
+		return new JSONResponse(['ok' => true]);
+	}
+
+	/**
+	 * Replace the share list for a site.
+	 * @param array<array{type:string,with:string}> $shares
+	 */
+	#[NoAdminRequired]
+	public function share(int $id, array $shares): JSONResponse {
+		$site = $this->requireOwned($id);
+		if ($site instanceof JSONResponse) {
+			return $site;
+		}
+		$this->shares->deleteBySite($id);
+		foreach ($shares as $s) {
+			$share = new SiteShare();
+			$share->setSiteId($id);
+			$share->setShareType(($s['type'] ?? 'user') === 'group' ? 'group' : 'user');
+			$share->setShareWith((string) ($s['with'] ?? ''));
+			$this->shares->insert($share);
+		}
+		return new JSONResponse(['ok' => true]);
+	}
+
+	private function requireOwned(int $id): Site|JSONResponse {
+		$user = $this->userSession->getUser();
+		if ($user === null) {
+			return new JSONResponse(['error' => 'unauthenticated'], 401);
+		}
+		$site = $this->sites->find($id);
+		if ($site === null) {
+			return new JSONResponse(['error' => 'not-found'], 404);
+		}
+		if ($site->getOwnerUid() !== $user->getUID()) {
+			return new JSONResponse(['error' => 'forbidden'], 403);
+		}
+		return $site;
+	}
+}
