@@ -20,6 +20,33 @@
 			<NcButton type="primary" :disabled="!name || !pickedFileId" @click="create">
 				{{ t('markdownsite', 'Create') }}
 			</NcButton>
+
+			<h3>{{ t('markdownsite', 'Link appearance') }}</h3>
+			<div class="pref-row">
+				<label>
+					<input type="checkbox" v-model="prefs.linkUnderline" >
+					{{ t('markdownsite', 'Underline links') }}
+				</label>
+			</div>
+			<div class="pref-row">
+				<label>
+					<input type="checkbox" v-model="prefs.linkBold" >
+					{{ t('markdownsite', 'Bold links') }}
+				</label>
+			</div>
+			<div class="pref-row">
+				<label>
+					<input type="color" :value="prefs.linkColor || '#0082c9'" @input="prefs.linkColor = $event.target.value" >
+					{{ t('markdownsite', 'Link colour') }}
+				</label>
+				<NcButton type="tertiary" @click="prefs.linkColor = ''">
+					{{ t('markdownsite', 'Use theme colour') }}
+				</NcButton>
+			</div>
+			<a class="mds-preview" :style="prefs.cssVars">{{ t('markdownsite', 'Preview link') }}</a>
+			<NcButton type="secondary" @click="prefs.save()">
+				{{ t('markdownsite', 'Save appearance') }}
+			</NcButton>
 		</div>
 	</NcAppContent>
 </template>
@@ -29,17 +56,19 @@ import { NcAppContent, NcButton } from '@nextcloud/vue'
 import { getFilePickerBuilder, FilePickerType } from '@nextcloud/dialogs'
 import { translate as t } from '@nextcloud/l10n'
 import { useSitesStore } from '../stores/sites.js'
+import { usePrefsStore } from '../stores/prefs.js'
 
 export default {
 	name: 'SiteList',
 	components: { NcAppContent, NcButton },
 	setup() {
-		return { store: useSitesStore(), t }
+		return { store: useSitesStore(), prefs: usePrefsStore(), t }
 	},
 	data() {
 		return { name: '', pickedFileId: null, pickedPath: '' }
 	},
 	async mounted() {
+		this.prefs.load()
 		if (!this.store.loaded) { await this.store.load() }
 	},
 	methods: {
@@ -63,3 +92,17 @@ export default {
 	},
 }
 </script>
+
+<style scoped>
+.site-list { max-width: 640px; margin: 0 auto; padding: 24px; }
+.site-list h3 { margin-top: 24px; }
+.pref-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+.pref-row label { display: flex; align-items: center; gap: 8px; }
+.mds-preview {
+	display: inline-block;
+	margin: 8px 0;
+	color: var(--mds-link-color, var(--color-primary-element));
+	text-decoration: var(--mds-link-decoration, underline);
+	font-weight: var(--mds-link-weight, 600);
+}
+</style>

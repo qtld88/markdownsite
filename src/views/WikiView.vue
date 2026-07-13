@@ -6,7 +6,7 @@
 		</NcAppNavigation>
 		<NcAppContent>
 			<div v-if="error" class="mdsite-error">{{ error }}</div>
-			<article v-else class="mdsite-content" v-html="html" @click="onClick" />
+			<article v-else class="mdsite-content" :style="prefs.cssVars" v-html="html" @click="onClick" />
 		</NcAppContent>
 	</NcContent>
 </template>
@@ -16,16 +16,20 @@ import { NcContent, NcAppNavigation, NcAppContent } from '@nextcloud/vue'
 import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { getTree, getPage } from '../services/api.js'
+import { usePrefsStore } from '../stores/prefs.js'
 import PageTree from '../components/PageTree.vue'
 
 export default {
 	name: 'WikiView',
 	components: { NcContent, NcAppNavigation, NcAppContent, PageTree },
 	props: { siteId: { type: [String, Number], required: true }, path: { type: String, default: '' } },
-	setup() { return { t } },
+	setup() { return { t, prefs: usePrefsStore() } },
 	data() { return { tree: [], html: '', error: '' } },
 	watch: { path: 'loadPage', siteId: 'init' },
-	async mounted() { await this.init() },
+	async mounted() {
+		this.prefs.load()
+		await this.init()
+	},
 	methods: {
 		async init() {
 			const data = await getTree(this.siteId)
@@ -64,18 +68,13 @@ export default {
 </script>
 
 <style scoped>
-.mdsite-content {
-	max-width: 820px;
-	margin: 0 auto;
-	padding: 24px;
-	/* Overridable by a future per-user preferences panel */
-	--mds-link-color: var(--color-primary-element);
-	--mds-link-decoration: underline;
-}
+.mdsite-content { max-width: 820px; margin: 0 auto; padding: 24px; }
+/* --mds-link-* come from the per-user preferences store (inline on the element);
+   fallbacks apply before prefs load. */
 .mdsite-content :deep(a) {
-	color: var(--mds-link-color);
-	text-decoration: var(--mds-link-decoration);
-	font-weight: 500;
+	color: var(--mds-link-color, var(--color-primary-element));
+	text-decoration: var(--mds-link-decoration, underline);
+	font-weight: var(--mds-link-weight, 600);
 }
 .mdsite-content :deep(a:hover) { text-decoration: none; }
 .mdsite-content :deep(.markdownsite-broken) {

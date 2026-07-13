@@ -11,3 +11,5 @@ export const shareSite = (id, shares) => axios.post(base(`/sites/${id}/share`), 
 export const getTree = (siteId) => axios.get(base(`/s/${siteId}/tree`)).then(r => r.data)
 export const getPage = (siteId, path) => axios.get(base(`/s/${siteId}/page/${encPath(path)}`)).then(r => r.data)
 export const assetUrl = (siteId, path) => base(`/s/${siteId}/file/${encPath(path)}`)
+export const getPrefs = () => axios.get(base('/prefs')).then(r => r.data)
+export const savePrefs = (p) => axios.put(base('/prefs'), p).then(r => r.data)
