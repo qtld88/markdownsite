@@ -55,7 +55,12 @@ class AssetController extends Controller {
 			$node->getName(),
 			$node->getMimeType(),
 		);
-		$response->setContentDispositionHeader($node->getName(), 'inline');
+		// Serve inline so images render in <img> and PDFs/text preview in-browser
+		// (DataDownloadResponse defaults to attachment/download).
+		$response->addHeader(
+			'Content-Disposition',
+			'inline; filename="' . str_replace('"', '', $node->getName()) . '"',
+		);
 		return $response;
 	}
 }

@@ -64,7 +64,24 @@ export default {
 </script>
 
 <style scoped>
-.mdsite-content { max-width: 820px; margin: 0 auto; padding: 24px; }
-.mdsite-content :deep(.markdownsite-broken) { color: var(--color-error); text-decoration: line-through; }
+.mdsite-content {
+	max-width: 820px;
+	margin: 0 auto;
+	padding: 24px;
+	/* Overridable by a future per-user preferences panel */
+	--mds-link-color: var(--color-primary-element);
+	--mds-link-decoration: underline;
+}
+.mdsite-content :deep(a) {
+	color: var(--mds-link-color);
+	text-decoration: var(--mds-link-decoration);
+	font-weight: 500;
+}
+.mdsite-content :deep(a:hover) { text-decoration: none; }
+.mdsite-content :deep(.markdownsite-broken) {
+	color: var(--color-error);
+	text-decoration: line-through;
+	font-weight: 400;
+}
 .mdsite-content :deep(img) { max-width: 100%; }
 </style>
