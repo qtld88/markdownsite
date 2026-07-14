@@ -2,7 +2,10 @@ import { defineStore } from 'pinia'
 import { listSites, createSite, deleteSite } from '../services/api.js'
 
 export const useSitesStore = defineStore('sites', {
-	state: () => ({ sites: [], loaded: false }),
+	state: () => ({ sites: [], loaded: false, currentId: null }),
+	getters: {
+		current: (state) => state.sites.find(s => String(s.id) === String(state.currentId)) || null,
+	},
 	actions: {
 		async load() {
 			this.sites = await listSites()
@@ -15,7 +18,9 @@ export const useSitesStore = defineStore('sites', {
 		},
 		async remove(id) {
 			await deleteSite(id)
-			this.sites = this.sites.filter(s => s.id !== id)
+			this.sites = this.sites.filter(s => String(s.id) !== String(id))
+			if (String(this.currentId) === String(id)) { this.currentId = null }
 		},
+		setCurrent(id) { this.currentId = id },
 	},
 })
