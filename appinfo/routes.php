@@ -9,6 +9,8 @@ return [
 		['name' => 'site#create', 'url' => '/sites', 'verb' => 'POST'],
 		['name' => 'site#destroy', 'url' => '/sites/{id}', 'verb' => 'DELETE'],
 		['name' => 'site#share', 'url' => '/sites/{id}/share', 'verb' => 'POST'],
+		['name' => 'site#shares', 'url' => '/sites/{id}/shares', 'verb' => 'GET'],
+		['name' => 'sharee#index', 'url' => '/sharees', 'verb' => 'GET'],
 		['name' => 'preferences#index', 'url' => '/prefs', 'verb' => 'GET'],
 		['name' => 'preferences#update', 'url' => '/prefs', 'verb' => 'PUT'],
 		['name' => 'page#tree', 'url' => '/s/{siteId}/tree', 'verb' => 'GET'],
