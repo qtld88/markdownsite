@@ -6,8 +6,8 @@
 			:name="node.name"
 			:allow-collapse="node.type === 'dir'"
 			:open="isOpen(node)"
-			:to="node.type === 'page' ? pageRoute(node) : null"
-			@update:open="v => setOpen(node, v)">
+			:to="node.type === 'page' ? pageRoute(node) : undefined"
+			@click="onItemClick(node)">
 			<template #icon>
 				<NcIconSvgWrapper v-if="node.type === 'dir'" :path="mdiFolder" :size="20" />
 				<NcIconSvgWrapper v-else :path="mdiFileDocumentOutline" :size="20" />
@@ -35,6 +35,10 @@ export default {
 	methods: {
 		isOpen(node) { return !!this.openMap[node.path] },
 		setOpen(node, v) { this.openMap = { ...this.openMap, [node.path]: v } },
+		onItemClick(node) {
+			// Folder rows have no route; clicking the row toggles open (like the chevron).
+			if (node.type === 'dir') { this.setOpen(node, !this.isOpen(node)) }
+		},
 		pageRoute(node) {
 			return { name: 'page', params: { siteId: this.siteId, path: node.path } }
 		},
