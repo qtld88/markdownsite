@@ -16,10 +16,10 @@ class ContentService {
 	) {
 	}
 
-	/** Resolve the site root in $uid's mount, or null if inaccessible. */
-	public function resolveRoot(Site $site, string $uid): ?Folder {
-		$userFolder = $this->rootFolder->getUserFolder($uid);
-		$nodes = $userFolder->getById($site->getRootFileId());
+	/** Resolve the site root in its owner's mount, or null if the folder is gone. */
+	public function resolveRoot(Site $site): ?Folder {
+		$ownerFolder = $this->rootFolder->getUserFolder($site->getOwnerUid());
+		$nodes = $ownerFolder->getById($site->getRootFileId());
 		foreach ($nodes as $node) {
 			if ($node instanceof Folder) {
 				return $node;
