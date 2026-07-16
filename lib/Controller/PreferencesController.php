@@ -32,7 +32,7 @@ class PreferencesController extends Controller {
 	}
 
 	#[NoAdminRequired]
-	public function update(string $linkColor = '', bool $linkUnderline = true, bool $linkBold = true): JSONResponse {
+	public function update(string $linkColor = '', bool $linkUnderline = true, bool $linkBold = true, bool $revealActive = true): JSONResponse {
 		$user = $this->userSession->getUser();
 		if ($user === null) {
 			return new JSONResponse(['error' => 'unauthenticated'], 401);
@@ -43,15 +43,17 @@ class PreferencesController extends Controller {
 		$this->config->setUserValue($uid, self::APP, 'link_color', $color);
 		$this->config->setUserValue($uid, self::APP, 'link_underline', $linkUnderline ? '1' : '0');
 		$this->config->setUserValue($uid, self::APP, 'link_bold', $linkBold ? '1' : '0');
+		$this->config->setUserValue($uid, self::APP, 'reveal_active', $revealActive ? '1' : '0');
 		return new JSONResponse($this->read($uid));
 	}
 
-	/** @return array{linkColor:string,linkUnderline:bool,linkBold:bool} */
+	/** @return array{linkColor:string,linkUnderline:bool,linkBold:bool,revealActive:bool} */
 	private function read(string $uid): array {
 		return [
 			'linkColor' => $this->config->getUserValue($uid, self::APP, 'link_color', ''),
 			'linkUnderline' => $this->config->getUserValue($uid, self::APP, 'link_underline', '1') === '1',
 			'linkBold' => $this->config->getUserValue($uid, self::APP, 'link_bold', '1') === '1',
+			'revealActive' => $this->config->getUserValue($uid, self::APP, 'reveal_active', '1') === '1',
 		];
 	}
 }
