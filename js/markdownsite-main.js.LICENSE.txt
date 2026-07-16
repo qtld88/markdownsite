@@ -93,12 +93,6 @@
 * @license MIT, https://github.com/focus-trap/tabbable/blob/master/LICENSE
 */
 
-/*!
-* vue-router v5.1.0
-* (c) 2026 Eduardo San Martin Morote
-* @license MIT
-*/
-
 /*! #__NO_SIDE_EFFECTS__ */
 
 /*! @license DOMPurify 3.4.12 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.12/LICENSE */

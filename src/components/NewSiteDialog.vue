@@ -11,7 +11,7 @@
 			</div>
 		</div>
 		<template #actions>
-			<NcButton type="primary" :disabled="!name || !pickedFileId" @click="create">
+			<NcButton variant="primary" :disabled="!name || !pickedFileId" @click="create">
 				{{ t('markdownsite', 'Create') }}
 			</NcButton>
 		</template>

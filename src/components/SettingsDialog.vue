@@ -14,12 +14,12 @@
 				<NcColorPicker :model-value="prefs.linkColor || '#0082c9'" @update:model-value="c => prefs.linkColor = c">
 					<NcButton>{{ t('markdownsite', 'Pick colour') }}</NcButton>
 				</NcColorPicker>
-				<NcButton type="tertiary" @click="prefs.linkColor = ''">
+				<NcButton variant="tertiary" @click="prefs.linkColor = ''">
 					{{ t('markdownsite', 'Use theme colour') }}
 				</NcButton>
 			</div>
 			<a class="mds-preview" :style="prefs.cssVars">{{ t('markdownsite', 'Preview link') }}</a>
-			<NcButton type="secondary" @click="prefs.save()">
+			<NcButton variant="secondary" @click="prefs.save()">
 				{{ t('markdownsite', 'Save appearance') }}
 			</NcButton>
 		</NcAppSettingsSection>
