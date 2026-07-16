@@ -2,6 +2,11 @@
 	<NcAppSettingsDialog :open="open"
 		:name="t('markdownsite', 'MarkdownSite settings')"
 		@update:open="v => $emit('update:open', v)">
+		<NcAppSettingsSection id="navigation" :name="t('markdownsite', 'Navigation')">
+			<NcCheckboxRadioSwitch v-model="prefs.revealActive" @update:model-value="prefs.save()">
+				{{ t('markdownsite', 'Always show current open file in the tree structure') }}
+			</NcCheckboxRadioSwitch>
+		</NcAppSettingsSection>
 		<NcAppSettingsSection id="link-appearance" :name="t('markdownsite', 'Link appearance')">
 			<NcCheckboxRadioSwitch v-model="prefs.linkUnderline">
 				{{ t('markdownsite', 'Underline links') }}
@@ -23,6 +28,7 @@
 				{{ t('markdownsite', 'Save appearance') }}
 			</NcButton>
 		</NcAppSettingsSection>
+		<SharingSettings />
 	</NcAppSettingsDialog>
 </template>
 
@@ -34,10 +40,11 @@ import NcColorPicker from '@nextcloud/vue/components/NcColorPicker'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import { usePrefsStore } from '../stores/prefs.js'
+import SharingSettings from './SharingSettings.vue'
 
 export default {
 	name: 'SettingsDialog',
-	components: { NcAppSettingsDialog, NcAppSettingsSection, NcCheckboxRadioSwitch, NcColorPicker, NcButton },
+	components: { NcAppSettingsDialog, NcAppSettingsSection, NcCheckboxRadioSwitch, NcColorPicker, NcButton, SharingSettings },
 	props: { open: { type: Boolean, default: false } },
 	emits: ['update:open'],
 	setup() { return { prefs: usePrefsStore(), t } },
