@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OCA\MarkdownSite\Controller;
 
 use OCA\MarkdownSite\Db\SiteMapper;
+use OCA\MarkdownSite\Db\SiteShareMapper;
+use OCA\MarkdownSite\Service\AccessService;
 use OCA\MarkdownSite\Service\ContentService;
 use OCA\MarkdownSite\Service\IndexBuilder;
 use OCA\MarkdownSite\Wiki\LinkResolver;
@@ -17,6 +19,7 @@ use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\Files\NotFoundException;
+use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
@@ -25,9 +28,12 @@ class PageController extends Controller {
 	public function __construct(
 		IRequest $request,
 		private SiteMapper $sites,
+		private SiteShareMapper $shareMapper,
+		private AccessService $access,
 		private ContentService $content,
 		private IndexBuilder $indexBuilder,
 		private IUserSession $userSession,
+		private IGroupManager $groupManager,
 		private IURLGenerator $urlGenerator,
 	) {
 		parent::__construct('markdownsite', $request);
@@ -99,9 +105,15 @@ class PageController extends Controller {
 		if ($site === null) {
 			return new JSONResponse(['error' => 'site-not-found'], 404);
 		}
-		$root = $this->content->resolveRoot($site, $user->getUID());
-		if ($root === null) {
+		$uid = $user->getUID();
+		$groups = $this->groupManager->getUserGroupIds($user);
+		$shares = $this->shareMapper->findBySite($siteId);
+		if (!$this->access->canView($site, $uid, $groups, $shares)) {
 			return new JSONResponse(['error' => 'forbidden'], 403);
+		}
+		$root = $this->content->resolveRoot($site);
+		if ($root === null) {
+			return new JSONResponse(['error' => 'site-not-found'], 404);
 		}
 		return $root;
 	}
