@@ -6,6 +6,7 @@ export const usePrefsStore = defineStore('prefs', {
 		linkColor: '',
 		linkUnderline: true,
 		linkBold: true,
+		revealActive: true,
 		loaded: false,
 	}),
 	getters: {
@@ -26,6 +27,7 @@ export const usePrefsStore = defineStore('prefs', {
 				linkColor: this.linkColor,
 				linkUnderline: this.linkUnderline,
 				linkBold: this.linkBold,
+				revealActive: this.revealActive,
 			}))
 		},
 	},
