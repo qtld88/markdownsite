@@ -10,7 +10,7 @@ Supports Obsidian-style wikilinks, embeds and YAML frontmatter. Links resolve by
 so a synced Obsidian vault or any Markdown folder just works. Content stays editable in
 the Files app or via desktop sync; the reader reflects changes live.
 	]]></description>
-	<version>0.2.1</version>
+	<version>0.3.0</version>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="qtld@pm.me" homepage="https://github.com/qtld88">QTL</author>
 	<namespace>MarkdownSite</namespace>
