@@ -3,7 +3,8 @@
 		<NcAppNavigation>
 			<template v-if="store.sites.length">
 				<SiteSwitcher />
-				<PageTree v-if="activeSiteId" :nodes="tree" :site-id="activeSiteId" />
+				<PageTree v-if="activeSiteId" :nodes="tree" :site-id="activeSiteId"
+					:active-path="prefs.revealActive ? currentPath : ''" />
 			</template>
 			<template #footer>
 				<div class="mds-navfooter">
