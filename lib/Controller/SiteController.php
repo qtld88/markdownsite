@@ -36,14 +36,15 @@ class SiteController extends Controller {
 		}
 		$uid = $user->getUID();
 		$groups = $this->groupManager->getUserGroupIds($user);
-		$userFolder = $this->rootFolder->getUserFolder($uid);
 		$out = [];
 		foreach ($this->sites->findVisible($uid, $groups) as $site) {
-			// Only include sites whose root the viewer can actually access.
-			if (count($userFolder->getById($site->getRootFileId())) === 0) {
-				continue;
+			$dto = $site->toArray();
+			$dto['isOwner'] = $site->getOwnerUid() === $uid;
+			if (!$dto['isOwner']) {
+				// Don't leak the owner's uid to a share recipient.
+				unset($dto['ownerUid']);
 			}
-			$out[] = $site->toArray();
+			$out[] = $dto;
 		}
 		return new JSONResponse($out);
 	}
@@ -102,6 +103,20 @@ class SiteController extends Controller {
 			$this->shares->insert($share);
 		}
 		return new JSONResponse(['ok' => true]);
+	}
+
+	/** @return array<int,array{type:string,with:string}> */
+	#[NoAdminRequired]
+	public function shares(int $id): JSONResponse {
+		$site = $this->requireOwned($id);
+		if ($site instanceof JSONResponse) {
+			return $site;
+		}
+		$out = array_map(
+			fn ($s) => ['type' => $s->getShareType(), 'with' => $s->getShareWith()],
+			$this->shares->findBySite($id),
+		);
+		return new JSONResponse($out);
 	}
 
 	private function requireOwned(int $id): Site|JSONResponse {
