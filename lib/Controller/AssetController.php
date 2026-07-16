@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace OCA\MarkdownSite\Controller;
 
 use OCA\MarkdownSite\Db\SiteMapper;
+use OCA\MarkdownSite\Db\SiteShareMapper;
+use OCA\MarkdownSite\Service\AccessService;
 use OCA\MarkdownSite\Service\ContentService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataDownloadResponse;
+use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\NotFoundResponse;
 use OCP\Files\File;
 use OCP\Files\NotFoundException;
+use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IUserSession;
 
@@ -21,8 +25,11 @@ class AssetController extends Controller {
 	public function __construct(
 		IRequest $request,
 		private SiteMapper $sites,
+		private SiteShareMapper $shareMapper,
+		private AccessService $access,
 		private ContentService $content,
 		private IUserSession $userSession,
+		private IGroupManager $groupManager,
 	) {
 		parent::__construct('markdownsite', $request);
 	}
@@ -38,7 +45,13 @@ class AssetController extends Controller {
 		if ($site === null) {
 			return new NotFoundResponse();
 		}
-		$root = $this->content->resolveRoot($site, $user->getUID());
+		$uid = $user->getUID();
+		$groups = $this->groupManager->getUserGroupIds($user);
+		$shares = $this->shareMapper->findBySite($siteId);
+		if (!$this->access->canView($site, $uid, $groups, $shares)) {
+			return new JSONResponse(['error' => 'forbidden'], Http::STATUS_FORBIDDEN);
+		}
+		$root = $this->content->resolveRoot($site);
 		if ($root === null) {
 			return new NotFoundResponse();
 		}
