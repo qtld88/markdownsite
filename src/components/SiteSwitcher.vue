@@ -7,7 +7,7 @@
 			:placeholder="t('markdownsite', 'Select a wiki')"
 			label="label"
 			@update:model-value="onSelect" />
-		<NcActions :aria-label="t('markdownsite', 'Site actions')">
+		<NcActions v-if="isOwner" :aria-label="t('markdownsite', 'Site actions')">
 			<NcActionButton :close-after-click="true" @click="confirmDelete">
 				<template #icon><NcIconSvgWrapper :path="mdiDelete" :size="20" /></template>
 				{{ t('markdownsite', 'Delete site') }}
@@ -32,6 +32,7 @@ export default {
 	computed: {
 		options() { return this.store.sites.map(s => ({ id: s.id, label: `${s.icon || '📄'} ${s.name}` })) },
 		selected() { const c = this.store.current; return c ? { id: c.id, label: `${c.icon || '📄'} ${c.name}` } : null },
+		isOwner() { const c = this.store.current; return !!(c && c.isOwner) },
 	},
 	methods: {
 		onSelect(opt) {
@@ -47,7 +48,13 @@ export default {
 				text: t('markdownsite', 'Delete this wiki site? The underlying files are not touched.'),
 			})
 			if (!ok) { return }
-			await this.store.remove(c.id)
+			try {
+				await this.store.remove(c.id)
+			} catch (e) {
+				const { showError } = await import('@nextcloud/dialogs')
+				showError(t('markdownsite', 'Could not delete this wiki site'))
+				return
+			}
 			this.$router.push({ name: 'home' })
 		},
 	},
