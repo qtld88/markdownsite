@@ -5,14 +5,29 @@
 		</p>
 		<div v-for="site in ownedSites" :key="site.id" class="mds-share-site">
 			<h4>{{ site.icon || '📄' }} {{ site.name }}</h4>
-			<div class="mds-chips">
-				<span v-for="(s, i) in shareMap[site.id] || []" :key="s.type + ':' + s.with" class="mds-chip">
-					{{ s.type === 'group' ? '👥' : '👤' }} {{ s.with }}
-					<button type="button" class="mds-chip-remove"
-						:aria-label="t('markdownsite', 'Remove')"
-						@click="removeShare(site, i)">×</button>
-				</span>
-			</div>
+			<table class="mds-share-table">
+				<thead>
+					<tr>
+						<th>{{ t('markdownsite', 'Type') }}</th>
+						<th>{{ t('markdownsite', 'Shared with') }}</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-if="!(shareMap[site.id] || []).length">
+						<td colspan="3" class="mds-empty">{{ t('markdownsite', 'No shares yet.') }}</td>
+					</tr>
+					<tr v-for="(s, i) in shareMap[site.id] || []" :key="s.type + ':' + s.with">
+						<td>{{ s.type === 'group' ? t('markdownsite', 'Group') : t('markdownsite', 'User') }}</td>
+						<td>{{ s.with }}</td>
+						<td>
+							<NcButton type="tertiary" @click="removeShare(site, i)">
+								{{ t('markdownsite', 'Unshare') }}
+							</NcButton>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 			<NcSelect
 				:model-value="null"
 				:options="optionsFor(site.id)"
@@ -28,13 +43,14 @@
 <script>
 import NcAppSettingsSection from '@nextcloud/vue/components/NcAppSettingsSection'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import { useSitesStore } from '../stores/sites.js'
 import { getShares, searchSharees, shareSite } from '../services/api.js'
 
 export default {
 	name: 'SharingSettings',
-	components: { NcAppSettingsSection, NcSelect },
+	components: { NcAppSettingsSection, NcSelect, NcButton },
 	setup() { return { store: useSitesStore(), t } },
 	data() {
 		return { shareMap: {}, searchResults: {}, searching: {} }
@@ -112,14 +128,13 @@ export default {
 .mds-empty { color: var(--color-text-maxcontrast); }
 .mds-share-site { margin: 12px 0 20px; }
 .mds-share-site h4 { margin: 0 0 6px; }
-.mds-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.mds-chip {
-	display: inline-flex; align-items: center; gap: 4px;
-	background: var(--color-background-dark); border-radius: var(--border-radius-pill, 16px);
-	padding: 2px 6px 2px 10px; font-size: 0.9em;
+.mds-share-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.mds-share-table th {
+	text-align: left; font-weight: 600; color: var(--color-text-maxcontrast);
+	font-size: 0.85em; padding: 4px 8px; border-bottom: 1px solid var(--color-border);
 }
-.mds-chip-remove {
-	border: none; background: none; cursor: pointer; color: var(--color-text-maxcontrast);
-	font-size: 1.1em; line-height: 1; padding: 0 4px;
+.mds-share-table td {
+	padding: 4px 8px; border-bottom: 1px solid var(--color-border);
 }
+.mds-share-table td.mds-empty { padding: 10px 8px; }
 </style>
