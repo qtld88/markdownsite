@@ -10,7 +10,7 @@ Supports Obsidian-style wikilinks, embeds and YAML frontmatter. Links resolve by
 so a synced Obsidian vault or any Markdown folder just works. Content stays editable in
 the Files app or via desktop sync; the reader reflects changes live.
 	]]></description>
-	<version>0.3.9</version>
+	<version>1.0.0</version>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="qtld@pm.me" homepage="https://github.com/qtld88">QTL</author>
 	<namespace>MarkdownSite</namespace>
@@ -18,6 +18,9 @@ the Files app or via desktop sync; the reader reflects changes live.
 	<category>organization</category>
 	<website>https://github.com/qtld88/markdownsite</website>
 	<bugs>https://github.com/qtld88/markdownsite/issues</bugs>
+	<repository type="git">https://github.com/qtld88/markdownsite.git</repository>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/qtld88/markdownsite/main/screenshots/wiki-view.jpg">https://raw.githubusercontent.com/qtld88/markdownsite/main/screenshots/wiki-view.jpg</screenshot>
+	<screenshot small-thumbnail="https://raw.githubusercontent.com/qtld88/markdownsite/main/screenshots/settings.jpg">https://raw.githubusercontent.com/qtld88/markdownsite/main/screenshots/settings.jpg</screenshot>
 	<dependencies>
 		<nextcloud min-version="28" max-version="31"/>
 		<php min-version="8.1" max-version="8.4"/>
