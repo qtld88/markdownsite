@@ -94,8 +94,15 @@ export default {
 			await this.persist(site, next)
 		},
 		async persist(site, shares) {
-			await shareSite(site.id, shares)
-			this.shareMap = { ...this.shareMap, [site.id]: shares }
+			try {
+				await shareSite(site.id, shares)
+				this.shareMap = { ...this.shareMap, [site.id]: shares }
+				const { showSuccess } = await import('@nextcloud/dialogs')
+				showSuccess(t('markdownsite', 'Sharing updated'))
+			} catch (e) {
+				const { showError } = await import('@nextcloud/dialogs')
+				showError(t('markdownsite', 'Could not update sharing'))
+			}
 		},
 	},
 }

@@ -117,6 +117,16 @@ export default {
 				return
 			}
 			await this.loadPage()
+			this.scrollActiveIntoView()
+		},
+		scrollActiveIntoView() {
+			if (!this.prefs.revealActive) { return }
+			this.$nextTick(() => {
+				const el = document.querySelector('.mds-tree [data-mds-active]')
+				if (el && el.scrollIntoView) {
+					el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+				}
+			})
 		},
 		async loadTree() {
 			try {

@@ -7,6 +7,7 @@
 			:allow-collapse="node.type === 'dir'"
 			:open="isOpen(node)"
 			:active="node.path === activePath"
+			:data-mds-active="node.path === activePath || null"
 			:to="node.type === 'page' ? pageRoute(node) : undefined"
 			@click="onItemClick(node)">
 			<template #icon>
