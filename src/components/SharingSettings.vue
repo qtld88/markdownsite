@@ -4,7 +4,7 @@
 			{{ t('markdownsite', "You don't own any wiki sites yet.") }}
 		</p>
 		<div v-for="site in ownedSites" :key="site.id" class="mds-share-site">
-			<h4>{{ site.icon || '📄' }} {{ site.name }}</h4>
+			<h4 class="mds-share-site-name">{{ site.icon || '📄' }} {{ site.name }}</h4>
 			<table class="mds-share-table">
 				<thead>
 					<tr>
@@ -126,9 +126,14 @@ export default {
 
 <style scoped>
 .mds-empty { color: var(--color-text-maxcontrast); }
-.mds-share-site { margin: 12px 0 20px; }
-.mds-share-site h4 { margin: 0 0 6px; }
-.mds-share-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.mds-share-site {
+	margin: 0 0 16px;
+	padding: 14px 16px;
+	border-radius: var(--border-radius-large, 8px);
+	background: var(--color-background-hover);
+}
+.mds-share-site-name { margin: 0 0 10px; font-size: 15px; }
+.mds-share-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
 .mds-share-table th {
 	text-align: left; font-weight: 600; color: var(--color-text-maxcontrast);
 	font-size: 0.85em; padding: 4px 8px; border-bottom: 1px solid var(--color-border);
