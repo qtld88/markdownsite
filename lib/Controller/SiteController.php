@@ -70,7 +70,11 @@ class SiteController extends Controller {
 		$site->setRootHintPath($rootHintPath);
 		$site->setCreatedAt(time());
 		$site = $this->sites->insert($site);
-		return new JSONResponse($site->toArray());
+		$dto = $site->toArray();
+		// The creator is always the owner; index() derives this per-viewer,
+		// but this response has no viewer context to derive it from.
+		$dto['isOwner'] = true;
+		return new JSONResponse($dto);
 	}
 
 	#[NoAdminRequired]
