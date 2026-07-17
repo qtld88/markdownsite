@@ -16,7 +16,7 @@ use OCP\AppFramework\Db\Entity;
  */
 class SiteShare extends Entity {
 	protected int $siteId = 0;
-	protected string $shareType = 'user';   // 'user' | 'group'
+	protected string $shareType = '';   // 'user' | 'group'
 	protected string $shareWith = '';
 
 	public function __construct() {
