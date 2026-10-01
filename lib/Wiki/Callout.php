@@ -17,12 +17,17 @@ class Callout extends AbstractBlock {
 	public function __construct(
 		private string $type,
 		private string $fold = self::FOLD_NONE,
+		private string $sourceMarkdown = '',
 	) {
 		parent::__construct();
 	}
 
 	public function getType(): string {
 		return $this->type;
+	}
+
+	public function getSourceMarkdown(): string {
+		return $this->sourceMarkdown;
 	}
 
 	public function getFold(): string {

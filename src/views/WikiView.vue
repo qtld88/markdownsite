@@ -39,7 +39,7 @@
 				<template #icon><NcIconSvgWrapper :path="mdiFileDocumentOutline" :size="64" /></template>
 			</NcEmptyContent>
 
-			<article v-else class="mds-content" :style="prefs.cssVars" v-html="html" @click="onClick" />
+			<article v-else ref="article" class="mds-content" :style="prefs.cssVars" v-html="html" @click="onClick" />
 		</NcAppContent>
 
 		<NewSiteDialog v-model:open="showNew" />
@@ -59,6 +59,7 @@ import { mdiPlus, mdiCog, mdiBookOpenVariant, mdiFileDocumentOutline, mdiFileRem
 import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { getTree, getPage } from '../services/api.js'
+import { decorateCallouts } from '../services/calloutCopy.js'
 import { useSitesStore } from '../stores/sites.js'
 import { usePrefsStore } from '../stores/prefs.js'
 import SiteSwitcher from '../components/SiteSwitcher.vue'
@@ -223,7 +224,7 @@ export default {
 .mds-content :deep(.mds-callout) {
 	--mds-c: 8, 109, 221;
 	--mds-icon: '✏️';
-	margin: 1em 0; border-radius: var(--border-radius-large, 8px); overflow: hidden;
+	margin: 1em 0; border-radius: var(--border-radius-large, 8px);
 	background: rgba(var(--mds-c), 0.1); border: 1px solid rgba(var(--mds-c), 0.25);
 }
 .mds-content :deep(.mds-callout-title) {
@@ -239,6 +240,25 @@ export default {
 	transform: rotate(45deg); transition: transform 0.15s; margin-right: 0.3em;
 }
 .mds-content :deep(details.mds-callout[open] > summary.mds-callout-title::after) { transform: rotate(-135deg); }
+.mds-content :deep(.mds-callout-actions) { position: relative; flex: none; margin-left: auto; }
+.mds-content :deep(.mds-callout-copy) {
+	display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;
+	border: none; border-radius: var(--border-radius-element, 8px); background: transparent;
+	color: var(--color-text-maxcontrast); cursor: pointer; opacity: 0.7;
+}
+.mds-content :deep(.mds-callout-copy:hover), .mds-content :deep(.mds-callout-copy:focus-visible), .mds-content :deep(.mds-callout-copy[aria-expanded='true']) { opacity: 1; background: rgba(var(--mds-c), 0.18); color: var(--color-main-text); }
+.mds-content :deep(.mds-callout-copy.is-done) { opacity: 1; color: var(--color-success-text, #2d7b41); }
+.mds-content :deep(.mds-callout-menu) {
+	position: absolute; right: 0; top: calc(100% + 4px); z-index: 10; min-width: 240px; padding: 4px;
+	background: var(--color-main-background); border: 1px solid var(--color-border-dark, var(--color-border));
+	border-radius: var(--border-radius-large, 8px); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+.mds-content :deep(.mds-callout-menu[hidden]) { display: none; }
+.mds-content :deep(.mds-callout-menu button) {
+	display: block; width: 100%; padding: 8px 12px; border: none; background: transparent; text-align: left;
+	color: var(--color-main-text); font: inherit; font-weight: 400; border-radius: var(--border-radius-element, 8px); cursor: pointer;
+}
+.mds-content :deep(.mds-callout-menu button:hover), .mds-content :deep(.mds-callout-menu button:focus-visible) { background: var(--color-background-hover); }
 .mds-content :deep(.mds-callout-content) { padding: 0.1em 1em 0.6em; }
 .mds-content :deep(.mds-callout-content > :first-child) { margin-top: 0.3em; }
 .mds-content :deep(.mds-callout-content > :last-child) { margin-bottom: 0.2em; }

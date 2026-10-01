@@ -35,6 +35,9 @@ class CalloutRenderer implements NodeRendererInterface {
 		);
 
 		$attrs = ['class' => 'mds-callout', 'data-callout' => $node->getType()];
+		if ($node->getSourceMarkdown() !== '') {
+			$attrs['data-markdown'] = $node->getSourceMarkdown();
+		}
 		if ($foldable) {
 			if ($node->getFold() === Callout::FOLD_OPEN) {
 				$attrs['open'] = '';

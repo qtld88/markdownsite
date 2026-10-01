@@ -16,6 +16,13 @@ use League\CommonMark\Node\Inline\Text;
  * Turns `> [!type]± Title` block quotes into Callout nodes, as Obsidian does.
  */
 class CalloutExtension implements ExtensionInterface {
+	/** @var list<string> */
+	private array $lines;
+
+	public function __construct(string $markdown) {
+		$this->lines = preg_split('/\R/', $markdown) ?: [];
+	}
+
 	public function register(EnvironmentBuilderInterface $environment): void {
 		$environment->addRenderer(Callout::class, new CalloutRenderer());
 		$environment->addEventListener(DocumentParsedEvent::class, $this->onDocumentParsed(...), -50);
@@ -33,6 +40,30 @@ class CalloutExtension implements ExtensionInterface {
 		}
 	}
 
+	/**
+	 * Markdown of the callout body: the quote's source lines minus the `>`
+	 * markers and minus the `[!type]` title line.
+	 */
+	private function sourceBody(BlockQuote $quote): string {
+		$start = $quote->getStartLine();
+		$end = $quote->getEndLine();
+		if ($start === null || $end === null || $end <= $start) {
+			return '';
+		}
+		$depth = 1;
+		for ($p = $quote->parent(); $p !== null; $p = $p->parent()) {
+			if ($p instanceof BlockQuote || $p instanceof Callout) {
+				$depth++;
+			}
+		}
+		$strip = '/^(?:[ \t]*>[ \t]?){1,' . $depth . '}/';
+		$body = [];
+		for ($i = $start + 1; $i <= $end; $i++) {
+			$body[] = preg_replace($strip, '', $this->lines[$i - 1] ?? '');
+		}
+		return trim(implode("\n", $body), "\n");
+	}
+
 	private function convert(BlockQuote $quote): void {
 		$paragraph = $quote->firstChild();
 		if (!$paragraph instanceof Paragraph) {
@@ -44,7 +75,7 @@ class CalloutExtension implements ExtensionInterface {
 			return;
 		}
 
-		$callout = new Callout(strtolower($m[1]), $m[2]);
+		$callout = new Callout(strtolower($m[1]), $m[2], $this->sourceBody($quote));
 		$title = new CalloutTitle();
 
 		// Title = rest of the first line (everything up to the first line break).

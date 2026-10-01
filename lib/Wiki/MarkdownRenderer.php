@@ -38,7 +38,7 @@ class MarkdownRenderer {
 		$environment->addExtension(new TaskListExtension());
 		$environment->addExtension(new StrikethroughExtension());
 		$environment->addExtension(new HighlightExtension());
-		$environment->addExtension(new CalloutExtension());
+		$environment->addExtension(new CalloutExtension($markdown));
 		// Priority must beat CommonMarkCoreExtension's OpenBracketParser (20),
 		// CloseBracketParser (30) and BangParser (10) — otherwise those consume
 		// the leading '['/'!' before our regex-based parsers ever see them.

@@ -107,4 +107,13 @@ class MarkdownRendererTest extends TestCase {
 		$this->assertStringContainsString('<blockquote>', $out['html']);
 		$this->assertStringNotContainsString('mds-callout', $out['html']);
 	}
+
+	public function testCalloutExposesSourceMarkdown(): void {
+		$md = "---\ntitle: X\n---\n\n# Hi\n\n> [!note] Copy\n> Hello [[Bitwarden]] ==x==\n>\n> - one\n> - two\n\nafter";
+		$out = $this->renderer()->render($md, '');
+		$this->assertStringContainsString(
+			'data-markdown="Hello [[Bitwarden]] ==x==&#10;&#10;- one&#10;- two"',
+			str_replace("\n", '&#10;', $out['html']),
+		);
+	}
 }
