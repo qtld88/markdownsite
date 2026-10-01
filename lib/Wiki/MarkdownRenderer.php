@@ -11,6 +11,10 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
 use League\CommonMark\Extension\FrontMatter\FrontMatterExtension;
 use League\CommonMark\Extension\FrontMatter\Output\RenderedContentWithFrontMatter;
+use League\CommonMark\Extension\Highlight\HighlightExtension;
+use League\CommonMark\Extension\Strikethrough\StrikethroughExtension;
+use League\CommonMark\Extension\Table\TableExtension;
+use League\CommonMark\Extension\TaskList\TaskListExtension;
 use League\CommonMark\MarkdownConverter;
 
 class MarkdownRenderer {
@@ -30,6 +34,11 @@ class MarkdownRenderer {
 		]);
 		$environment->addExtension(new CommonMarkCoreExtension());
 		$environment->addExtension(new FrontMatterExtension());
+		$environment->addExtension(new TableExtension());
+		$environment->addExtension(new TaskListExtension());
+		$environment->addExtension(new StrikethroughExtension());
+		$environment->addExtension(new HighlightExtension());
+		$environment->addExtension(new CalloutExtension());
 		// Priority must beat CommonMarkCoreExtension's OpenBracketParser (20),
 		// CloseBracketParser (30) and BangParser (10) — otherwise those consume
 		// the leading '['/'!' before our regex-based parsers ever see them.

@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+- Obsidian callouts (`> [!note] Title`, foldable with `+` / `-`), rendered as styled boxes with icons.
+- Tables, task lists (`- [ ]` / `- [x]`, styled checkboxes), `==highlight==` and `~~strikethrough~~`.
+- Visible bullets and numbers on lists.
+
 ## [1.0.0] - 2026-07-17
 
 ### Added
