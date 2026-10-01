@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [1.1.0] - 2026-10-01
 
 ### Added
 - Obsidian callouts (`> [!note] Title`, foldable with `+` / `-`), rendered as styled boxes with icons.

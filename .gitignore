@@ -3,3 +3,4 @@
 .phpunit.cache/
 /docs/superpowers/
 /.probe/
+/dist/
