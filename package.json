@@ -10,7 +10,8 @@
 		"watch": "webpack --node-env development --progress --watch",
 		"build": "webpack --node-env production --progress",
 		"lint": "eslint src --ext .vue,.js",
-		"lint:fix": "eslint src --ext .vue,.js --fix"
+		"lint:fix": "eslint src --ext .vue,.js --fix",
+		"test": "vitest run --dir tests/js"
 	},
 	"dependencies": {
 		"@mdi/js": "^7.4.47",
@@ -30,6 +31,7 @@
 		"eslint": "^8.56.0",
 		"eslint-plugin-vue": "^9.20.0",
 		"terser-webpack-plugin": "^5.3.17",
+		"vitest": "^3.2.7",
 		"webpack": "^5.90.0",
 		"webpack-cli": "^6.0.1"
 	}
