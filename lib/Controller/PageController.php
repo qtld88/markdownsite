@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\MarkdownSite\Controller;
 
 use OCA\MarkdownSite\Service\ContentService;
+use OCA\MarkdownSite\Service\IndexBuilder;
 use OCA\MarkdownSite\Service\PageRenderer;
 use OCA\MarkdownSite\Service\SiteAccessException;
 use OCA\MarkdownSite\Service\SiteContextResolver;
@@ -22,6 +23,7 @@ class PageController extends Controller {
 		private SiteContextResolver $contexts,
 		private ContentService $content,
 		private PageRenderer $renderer,
+		private IndexBuilder $indexBuilder,
 	) {
 		parent::__construct('markdownsite', $request);
 	}
@@ -39,9 +41,17 @@ class PageController extends Controller {
 		} catch (SiteAccessException $e) {
 			return $e->toResponse();
 		}
+		$index = $this->indexBuilder->build($ctx->root);
+		$aliases = $index->aliases();
 		return new JSONResponse([
 			'tree' => $this->content->listTree($ctx->root),
 			'home' => $this->homePath($ctx->root),
+			// For [[ completion in the editor.
+			'pages' => array_map(fn (string $path) => [
+				'path' => $path,
+				'title' => basename(preg_replace('/\.md$/i', '', $path) ?? $path),
+				'aliases' => $aliases[$path] ?? [],
+			], $index->paths()),
 		]);
 	}
 
