@@ -57,4 +57,35 @@ class LinkResolverTest extends TestCase {
 		$t = $this->resolver()->resolveHref('', '../../etc/passwd');
 		$this->assertSame('broken', $t->kind);
 	}
+
+	public function testWikilinkKeepsHeadingAsSlug(): void {
+		$t = $this->resolver()->resolveWikilink('', 'Bitwarden#My Heading');
+		$this->assertSame('page', $t->kind);
+		$this->assertSame('LEXIQUE/Bitwarden.md', $t->path);
+		$this->assertSame('my-heading', $t->fragment);
+	}
+
+	public function testWikilinkNestedHeadingTargetsLastPart(): void {
+		$t = $this->resolver()->resolveWikilink('', 'Bitwarden#Setup#Ünïcode step');
+		$this->assertSame('ünïcode-step', $t->fragment);
+	}
+
+	public function testWikilinkBlockReferenceHasNoFragment(): void {
+		$t = $this->resolver()->resolveWikilink('', 'Bitwarden#^abc123');
+		$this->assertSame('page', $t->kind);
+		$this->assertSame('', $t->fragment);
+	}
+
+	public function testWikilinkToHeadingOnSamePage(): void {
+		$t = $this->resolver()->resolveWikilink('OUTILS', '#Second part');
+		$this->assertSame('anchor', $t->kind);
+		$this->assertSame('second-part', $t->fragment);
+	}
+
+	public function testMarkdownLinkKeepsExplicitFragment(): void {
+		$t = $this->resolver()->resolveHref('OUTILS', '../LEXIQUE/Bitwarden.md#Keep_As-Is');
+		$this->assertSame('page', $t->kind);
+		$this->assertSame('LEXIQUE/Bitwarden.md', $t->path);
+		$this->assertSame('Keep_As-Is', $t->fragment);
+	}
 }
