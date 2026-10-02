@@ -77,6 +77,8 @@ import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { getTree, getPage } from '../services/api.js'
 import { decorateCallouts } from '../services/calloutCopy.js'
+import { decorateCode } from '../services/codeHighlight.js'
+import { renderDiagrams } from '../services/mermaid.js'
 import { headingElement, safeDecode, splitHash } from '../services/anchors.js'
 import { enableTaskLists } from '../services/taskList.js'
 import { useSitesStore } from '../stores/sites.js'
@@ -190,6 +192,9 @@ export default {
 			await this.$nextTick()
 			decorateCallouts(this.$refs.article)
 			enableTaskLists(this.$refs.article)
+			// Both load their libraries only when the page needs them; not awaited.
+			decorateCode(this.$refs.article)
+			renderDiagrams(this.$refs.article)
 			this.scrollToHash()
 		},
 		/** Scrolls to the heading named by the URL hash, or to the top of the page. */
@@ -378,4 +383,66 @@ export default {
 .mds-content :deep(.mds-callout[data-callout='bug']) { --mds-c: 233, 49, 71; --mds-icon: '🐛'; }
 .mds-content :deep(.mds-callout[data-callout='example']) { --mds-c: 120, 82, 238; --mds-icon: '📋'; }
 .mds-content :deep(.mds-callout[data-callout='quote']), .mds-content :deep(.mds-callout[data-callout='cite']) { --mds-c: 158, 158, 158; --mds-icon: '💬'; }
+
+/* Code blocks: language label, copy button, highlight.js token colours */
+.mds-content :deep(.mds-code) {
+	margin: 0.8em 0; border: 1px solid var(--color-border); border-radius: var(--border-radius-large, 8px);
+	background: var(--color-background-dark); overflow: hidden;
+}
+.mds-content :deep(.mds-code-header) {
+	display: flex; align-items: center; justify-content: space-between; min-height: 32px; padding: 0 4px 0 12px;
+	border-bottom: 1px solid var(--color-border); font-size: 0.8em; color: var(--color-text-maxcontrast);
+}
+.mds-content :deep(.mds-code-lang) { font-family: monospace; }
+.mds-content :deep(.mds-code-copy) {
+	display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; min-height: 0; padding: 0; margin: 0;
+	border: none; border-radius: var(--border-radius-element, 8px); background: transparent;
+	color: var(--color-text-maxcontrast); cursor: pointer;
+}
+.mds-content :deep(.mds-code-copy:hover), .mds-content :deep(.mds-code-copy:focus-visible) { background: var(--color-background-hover); color: var(--color-main-text); }
+.mds-content :deep(.mds-code-copy.is-done) { color: var(--color-success-text, #2d7b41); }
+.mds-content :deep(.mds-code pre) { margin: 0; border-radius: 0; background: transparent; }
+.mds-content :deep(.hljs-comment), .mds-content :deep(.hljs-quote) { color: var(--mds-hl-comment); font-style: italic; }
+.mds-content :deep(.hljs-keyword), .mds-content :deep(.hljs-selector-tag), .mds-content :deep(.hljs-doctag), .mds-content :deep(.hljs-section) { color: var(--mds-hl-keyword); }
+.mds-content :deep(.hljs-string), .mds-content :deep(.hljs-regexp), .mds-content :deep(.hljs-symbol) { color: var(--mds-hl-string); }
+.mds-content :deep(.hljs-number), .mds-content :deep(.hljs-literal), .mds-content :deep(.hljs-variable), .mds-content :deep(.hljs-template-variable) { color: var(--mds-hl-number); }
+.mds-content :deep(.hljs-title), .mds-content :deep(.hljs-title.function_), .mds-content :deep(.hljs-name) { color: var(--mds-hl-title); }
+.mds-content :deep(.hljs-type), .mds-content :deep(.hljs-built_in), .mds-content :deep(.hljs-title.class_) { color: var(--mds-hl-type); }
+.mds-content :deep(.hljs-attr), .mds-content :deep(.hljs-attribute), .mds-content :deep(.hljs-property), .mds-content :deep(.hljs-params) { color: var(--mds-hl-attr); }
+.mds-content :deep(.hljs-meta), .mds-content :deep(.hljs-bullet), .mds-content :deep(.hljs-link) { color: var(--mds-hl-meta); }
+.mds-content :deep(.hljs-addition) { color: var(--mds-hl-meta); background: var(--mds-hl-addition-bg); }
+.mds-content :deep(.hljs-deletion) { color: var(--mds-hl-keyword); background: var(--mds-hl-deletion-bg); }
+.mds-content :deep(.hljs-emphasis) { font-style: italic; }
+.mds-content :deep(.hljs-strong) { font-weight: 700; }
+
+/* Mermaid diagrams */
+.mds-content :deep(.mds-mermaid) { margin: 1em 0; overflow-x: auto; text-align: center; }
+.mds-content :deep(.mds-mermaid svg) { max-width: 100%; height: auto; }
+.mds-content :deep(.mds-mermaid-error) {
+	margin: 1em 0; padding: 8px 12px; border: 1px solid var(--color-error);
+	border-radius: var(--border-radius-large, 8px);
+}
+.mds-content :deep(.mds-mermaid-error-title) { margin: 0 0 6px; color: var(--color-error); font-weight: 600; }
+</style>
+
+<style>
+/* Syntax colours. Not scoped: they switch on Nextcloud's theme, set on <body>
+   (data-themes "dark…", "light…", or "default" = follow the system). */
+.mds-content {
+	--mds-hl-comment: #6e7781; --mds-hl-keyword: #cf222e; --mds-hl-string: #0a3069; --mds-hl-number: #0550ae;
+	--mds-hl-title: #8250df; --mds-hl-type: #953800; --mds-hl-attr: #0550ae; --mds-hl-meta: #116329;
+	--mds-hl-addition-bg: #dafbe1; --mds-hl-deletion-bg: #ffebe9;
+}
+body[data-themes*='dark'] .mds-content {
+	--mds-hl-comment: #8b949e; --mds-hl-keyword: #ff7b72; --mds-hl-string: #a5d6ff; --mds-hl-number: #79c0ff;
+	--mds-hl-title: #d2a8ff; --mds-hl-type: #ffa657; --mds-hl-attr: #79c0ff; --mds-hl-meta: #7ee787;
+	--mds-hl-addition-bg: rgba(46, 160, 67, 0.15); --mds-hl-deletion-bg: rgba(248, 81, 73, 0.15);
+}
+@media (prefers-color-scheme: dark) {
+	body:not([data-themes*='light']):not([data-themes*='dark']) .mds-content {
+		--mds-hl-comment: #8b949e; --mds-hl-keyword: #ff7b72; --mds-hl-string: #a5d6ff; --mds-hl-number: #79c0ff;
+		--mds-hl-title: #d2a8ff; --mds-hl-type: #ffa657; --mds-hl-attr: #79c0ff; --mds-hl-meta: #7ee787;
+		--mds-hl-addition-bg: rgba(46, 160, 67, 0.15); --mds-hl-deletion-bg: rgba(248, 81, 73, 0.15);
+	}
+}
 </style>
