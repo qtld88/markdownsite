@@ -22,7 +22,7 @@
 6. **Fixture image is SVG.** A plan cannot embed a binary PNG, so the fixture image is `logo.svg` (served by `AssetController` as `image/svg+xml`, renders in `<img>`).
 7. **No frontend change in A**, so `js/` is not rebuilt. The version is still bumped to 1.2.0 (spec).
 
-Verified while writing this plan: on a `nextcloud:31` container, the staged app enables, a site created from the fixture folder returns its tree and pages, the SVG is served with `200 image/svg+xml`, a share to `reader` works, and the page's CSP contains `img-src 'self' data: blob: https:`.
+Verified while writing this plan: on a `nextcloud:31` container, the staged app enables, a site created from the fixture folder returns its tree and pages, the SVG is served with `200 image/svg+xml`, a share to `reader` works, and the page's CSP contains `img-src 'self' data: blob: https:`. The same script later ran on `nextcloud:34` (34.0.4) with the code of all five plans: the app enables and every browser check of plans B–E passed. If Docker Hub answers `429 Too Many Requests`, `docker pull mirror.gcr.io/library/nextcloud:34 && docker tag mirror.gcr.io/library/nextcloud:34 nextcloud:34` gets the same image.
 
 ## File map
 
