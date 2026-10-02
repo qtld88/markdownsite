@@ -660,6 +660,8 @@ echo "==> Installing and enabling markdownsite"
 docker cp "$STAGE/markdownsite" "$NAME:/var/www/html/custom_apps/markdownsite"
 docker exec "$NAME" chown -R www-data:www-data /var/www/html/custom_apps/markdownsite
 occ app:enable markdownsite
+# The welcome wizard would cover the page on first login.
+occ app:disable firstrunwizard >/dev/null || true
 
 echo "==> Creating a second user and uploading the fixture site"
 docker exec -u www-data -e OC_PASS="$USER_PASS" "$NAME" php occ user:add --password-from-env reader >/dev/null
