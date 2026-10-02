@@ -19,6 +19,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setRootHintPath(?string $v)
  * @method int getCreatedAt()
  * @method void setCreatedAt(int $v)
+ * @method string|null getSearchEtag()
+ * @method void setSearchEtag(?string $v)
  */
 class Site extends Entity {
 	protected string $ownerUid = '';
@@ -27,6 +29,7 @@ class Site extends Entity {
 	protected int $rootFileId = 0;
 	protected ?string $rootHintPath = null;
 	protected int $createdAt = 0;
+	protected ?string $searchEtag = null;
 
 	public function __construct() {
 		$this->addType('ownerUid', 'string');
@@ -35,6 +38,7 @@ class Site extends Entity {
 		$this->addType('rootFileId', 'integer');
 		$this->addType('rootHintPath', 'string');
 		$this->addType('createdAt', 'integer');
+		$this->addType('searchEtag', 'string');
 	}
 
 	public function toArray(): array {
