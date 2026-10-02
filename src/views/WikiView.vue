@@ -60,6 +60,7 @@ import { translate as t } from '@nextcloud/l10n'
 import { generateUrl } from '@nextcloud/router'
 import { getTree, getPage } from '../services/api.js'
 import { decorateCallouts } from '../services/calloutCopy.js'
+import { enableTaskLists } from '../services/taskList.js'
 import { useSitesStore } from '../stores/sites.js'
 import { usePrefsStore } from '../stores/prefs.js'
 import SiteSwitcher from '../components/SiteSwitcher.vue'
@@ -148,6 +149,10 @@ export default {
 			} finally {
 				this.loading = false
 			}
+			// The article is re-created with fresh HTML: add the client-side behaviours.
+			await this.$nextTick()
+			decorateCallouts(this.$refs.article)
+			enableTaskLists(this.$refs.article)
 		},
 		onClick(ev) {
 			const a = ev.target.closest('a')
@@ -199,20 +204,28 @@ export default {
 .mds-content :deep(del) { color: var(--color-text-maxcontrast); }
 
 /* Tables */
-.mds-content :deep(table) { border-collapse: separate; border-spacing: 0; margin: 0.9em 0; max-width: 100%; display: block; overflow-x: auto; border: 1px solid var(--color-border); border-radius: var(--border-radius-large, 8px); }
+/* display:block lets wide tables scroll; width:max-content keeps the frame hugging the columns. */
+.mds-content :deep(table) { border-collapse: separate; border-spacing: 0; margin: 0.9em 0; display: block; width: max-content; max-width: 100%; overflow-x: auto; border: 1px solid var(--color-border); border-radius: var(--border-radius-large, 8px); }
 .mds-content :deep(th), .mds-content :deep(td) { padding: 7px 12px; text-align: left; border-bottom: 1px solid var(--color-border); border-right: 1px solid var(--color-border); }
 .mds-content :deep(th:last-child), .mds-content :deep(td:last-child) { border-right: none; }
 .mds-content :deep(tbody tr:last-child td) { border-bottom: none; }
 .mds-content :deep(th) { background: var(--color-background-dark); font-weight: 600; }
 
 /* Task lists: "- [ ] item" */
-.mds-content :deep(li:has(> input[type='checkbox'])) { list-style: none; margin-left: -1.3em; display: flex; align-items: baseline; gap: 0.55em; }
+.mds-content :deep(li:has(> input[type='checkbox'])), .mds-content :deep(li:has(> p > input[type='checkbox'])) {
+	list-style: none; position: relative; margin-left: -1.3em; padding-left: 1.75em;
+}
+.mds-content :deep(li > input[type='checkbox']), .mds-content :deep(li > p > input[type='checkbox']) { position: absolute; left: 0; top: 0.28em; }
+.mds-content :deep(li > p:has(> input[type='checkbox'])) { margin-top: 0; }
 .mds-content :deep(input[type='checkbox']) {
 	appearance: none; -webkit-appearance: none;
-	flex: none; width: 1.05em; height: 1.05em; margin: 0; position: relative; top: 0.15em;
+	width: 1.05em; height: 1.05em; min-height: 0; margin: 0; padding: 0;
 	border: 2px solid var(--color-text-maxcontrast); border-radius: 0.3em;
-	background: transparent; cursor: default;
+	background: transparent; cursor: pointer;
 }
+.mds-content :deep(input[type='checkbox']:hover) { border-color: var(--color-primary-element); }
+.mds-content :deep(input[type='checkbox']:focus-visible) { outline: 2px solid var(--color-primary-element); outline-offset: 2px; }
+.mds-content :deep(input[type='checkbox'][disabled]) { cursor: default; }
 .mds-content :deep(input[type='checkbox']:checked) { background: var(--color-primary-element); border-color: var(--color-primary-element); }
 .mds-content :deep(input[type='checkbox']:checked)::after {
 	content: ''; position: absolute; left: 0.28em; top: 0.07em; width: 0.28em; height: 0.52em;

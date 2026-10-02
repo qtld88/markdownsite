@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+- Callout copy button now appears (it was never attached to the page).
+- Task list items wrap like normal text instead of splitting into columns.
+- Task list checkboxes can be ticked (in the page only; the file is not modified).
+- Tables shrink to their content instead of spanning the full width.
+
 ## [1.1.0] - 2026-10-01
 
 ### Added
