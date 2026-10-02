@@ -58,7 +58,7 @@ class MarkdownRendererTest extends TestCase {
 		$md = "---\ntitle: Hello\naliases: [Hi]\n---\n\n# Body";
 		$out = $this->renderer()->render($md, '');
 		$this->assertSame('Hello', $out['meta']['title']);
-		$this->assertStringContainsString('<h1>Body</h1>', $out['html']);
+		$this->assertStringContainsString('<h1 id="mds-body">Body</h1>', $out['html']);
 	}
 
 	public function testRendersTable(): void {
@@ -115,5 +115,67 @@ class MarkdownRendererTest extends TestCase {
 			'data-markdown="Hello [[Bitwarden]] ==x==&#10;&#10;- one&#10;- two"',
 			str_replace("\n", '&#10;', $out['html']),
 		);
+	}
+
+	public function testHeadingsGetPrefixedIds(): void {
+		$out = $this->renderer()->render("# Hello World\n\n## Café crème", '');
+		$this->assertStringContainsString('<h1 id="mds-hello-world">Hello World</h1>', $out['html']);
+		$this->assertStringContainsString('<h2 id="mds-café-crème">Café crème</h2>', $out['html']);
+	}
+
+	public function testDuplicateHeadingsGetNumberedIds(): void {
+		$out = $this->renderer()->render("## Notes\n\n## Notes\n\n## Notes", '');
+		$this->assertStringContainsString('id="mds-notes"', $out['html']);
+		$this->assertStringContainsString('id="mds-notes-1"', $out['html']);
+		$this->assertStringContainsString('id="mds-notes-2"', $out['html']);
+	}
+
+	public function testNoPermalinkSymbolIsInserted(): void {
+		$out = $this->renderer()->render("## Title", '');
+		$this->assertStringNotContainsString('heading-permalink', $out['html']);
+		$this->assertStringNotContainsString('¶', $out['html']);
+	}
+
+	public function testTocListsHeadingsWithLevelTextAndId(): void {
+		$md = "# Guide\n\n## First *step*\n\ntext\n\n### See [[Bitwarden]]\n\n## First step";
+		$out = $this->renderer()->render($md, 'OUTILS');
+		$this->assertSame([
+			['level' => 1, 'text' => 'Guide', 'id' => 'guide'],
+			['level' => 2, 'text' => 'First step', 'id' => 'first-step'],
+			['level' => 3, 'text' => 'See Bitwarden', 'id' => 'see-bitwarden'],
+			['level' => 2, 'text' => 'First step', 'id' => 'first-step-1'],
+		], $out['toc']);
+	}
+
+	public function testTocIsEmptyWithoutHeadings(): void {
+		$this->assertSame([], $this->renderer()->render('just text', '')['toc']);
+	}
+
+	public function testWikilinkToHeadingCarriesFragment(): void {
+		$out = $this->renderer()->render("[[Bitwarden#Master password]]", 'OUTILS');
+		$this->assertStringContainsString('href="/PAGE/LEXIQUE/Bitwarden.md#master-password"', $out['html']);
+	}
+
+	public function testWikilinkToHeadingWithLabel(): void {
+		$out = $this->renderer()->render("[[Bitwarden#Master password|the password]]", 'OUTILS');
+		$this->assertStringContainsString('href="/PAGE/LEXIQUE/Bitwarden.md#master-password"', $out['html']);
+		$this->assertStringContainsString('>the password<', $out['html']);
+	}
+
+	public function testWikilinkToHeadingOnSamePage(): void {
+		$out = $this->renderer()->render("## Next steps\n\nSee [[#Next steps]].", '');
+		$this->assertStringContainsString('href="#next-steps"', $out['html']);
+		$this->assertStringContainsString('id="mds-next-steps"', $out['html']);
+	}
+
+	public function testMarkdownLinkKeepsFragment(): void {
+		$out = $this->renderer()->render("[BW](../LEXIQUE/Bitwarden.md#x)", 'OUTILS');
+		$this->assertStringContainsString('href="/PAGE/LEXIQUE/Bitwarden.md#x"', $out['html']);
+	}
+
+	public function testSameNamedLinkDoesNotShiftHeadingId(): void {
+		// A link fragment must not count as a "used" slug for the heading.
+		$out = $this->renderer()->render("See [[#Setup]].\n\n## Setup", '');
+		$this->assertStringContainsString('id="mds-setup"', $out['html']);
 	}
 }

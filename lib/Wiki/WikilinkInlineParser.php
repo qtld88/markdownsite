@@ -29,7 +29,11 @@ class WikilinkInlineParser implements InlineParserInterface {
 		$label = isset($matches[1]) && $matches[1] !== '' ? trim($matches[1]) : $targetRaw;
 
 		$target = $this->resolver->resolveWikilink($this->currentDir, $targetRaw);
-		$url = $target->kind === 'page' ? $this->urls->page($target->path) : '#';
+		$url = match ($target->kind) {
+			'page' => $this->urls->page($target->path) . ($target->fragment === '' ? '' : '#' . $target->fragment),
+			'anchor' => '#' . $target->fragment,
+			default => '#',
+		};
 
 		$link = new Link($url, $label);
 		// Mark as already-resolved so the post-parse link-rewrite pass in
