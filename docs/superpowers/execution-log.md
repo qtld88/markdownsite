@@ -25,3 +25,12 @@
 - Release commit: `js/` now holds 198 files (about 27 MB, sources maps included); no absolute local path appears in any of them. Intermediate commits do not include `js/`.
 - Rebuilding rewrites `js/markdownsite-main.js.map` only (non-deterministic), so it is discarded outside release commits.
 - Smoke 31 (headless Chromium): "New site -> Choose folder..." opens the file picker (chunk path fix); the README page loads no highlight chunk; the Code page loads `hljs-core`, `hljs-yaml`, `hljs-bash`, `hljs-python`; labels bash/python/yaml/dataview; copy puts the raw text on the clipboard; the Diagrams page renders one SVG diagram and one "Invalid diagram" box with the source; dark theme (`data-themes="dark"`) keeps code and diagram readable; no console errors, no 4xx on app assets.
+
+## Plan D: Search (1.5.0)
+
+- Tasks 1-14 done as written, one commit each; every Expected line matched (107 PHP tests, 42 Vitest tests, build with 2 warnings).
+- Test-first order: for tasks whose class was written together with its test (D-1), the implementer moved the class aside to observe the plan's expected "class not found" failure; same result as the plan.
+- Only the release commit includes `js/` (6 files changed: main bundle, mermaid bundle and one mermaid chunk, with maps); a rebuild at that point is byte-identical to what is committed.
+- Smoke 31 (curl): `GET /search` returns accent-insensitive hits with highlights for `cafe creme`, the phrase `"second section"` finds two pages, `python` finds the Code page, nonsense returns an empty list, "all sites" scope works; table `oc_markdownsite_search` and column `search_etag` exist and `oc_migrations` lists `1500Date20261002000000`; `occ app:disable` then `occ app:enable` works.
+- Smoke 31 (headless Chromium): the search field replaces the tree while searching, snippets show marks, opening a result adds `?q=` and highlights 4 matches, navigating elsewhere drops `q` and the marks, `Ctrl+Shift+F` focuses the field, "All my sites" groups by site, Escape brings the tree back, "No results" appears for a nonsense query, no console errors.
+- Not checked: upgrading a real 1.4.0 install in place (the migration ran on a fresh install of 1.5.0).
