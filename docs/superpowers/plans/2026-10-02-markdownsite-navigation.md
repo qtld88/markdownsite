@@ -24,7 +24,7 @@
 7. **Breadcrumb collapse is custom**, not `NcBreadcrumbs`: `NcBreadcrumb` has no click event, and a folder without a note must reveal itself in the tree. Below 1024 px every folder except the last is hidden behind `…`.
 8. **Tree open state moves to a Pinia store** (`src/stores/tree.js`). `PageTree` is recursive and kept its open map per level, so nothing outside could reveal a folder. The store is cleared when the site changes.
 9. **TOC threshold counts all headings** (`toc.length >= 3`), as the spec says, before level filtering.
-10. **Vitest 3.2, not 5.** Vitest 5 requires Node ≥ 22.12; `package.json` declares Node ≥ 20. Tests live in `tests/js/` (outside `src/`, so webpack and ESLint ignore them) and run in Node; nothing in this plan needs a DOM.
+10. **Vitest 3.2, not 5.** Vitest 5 requires Node ≥ 22.12; `package.json` declares Node ≥ 20. Tests live in `tests/js/` (outside `src/`, so webpack and ESLint ignore them) and run in Node; nothing in this plan needs a DOM. The script is `vitest run --dir tests/js`: without `--dir`, Vitest also runs the copy of the tests that `scripts/smoke.sh` stages in `.smoke/`.
 11. **Scroll offsets.** The navigation toggle button sits in the top-left corner of the content area, so the page layout gets 52 px of left padding.
 12. **Same-hash clicks.** Clicking a TOC entry whose hash is already in the URL does not change the route; `goToHeading()` scrolls explicitly after `router.push()`.
 
@@ -67,11 +67,11 @@ Verified while writing this plan on a `nextcloud:31` container with the plan A s
 
 ```bash
 npm install --save-dev vitest@^3.2.7
-npm pkg set scripts.test="vitest run"
+npm pkg set scripts.test="vitest run --dir tests/js"
 ```
 
 Run: `grep -n '"test"\|"vitest"' package.json`
-Expected: `"test": "vitest run"` and `"vitest": "^3.2.7"`.
+Expected: `"test": "vitest run --dir tests/js"` and `"vitest": "^3.2.7"`.
 
 - [ ] **Step 2: Write the failing test**
 
