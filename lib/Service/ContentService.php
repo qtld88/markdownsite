@@ -19,13 +19,8 @@ class ContentService {
 	/** Resolve the site root in its owner's mount, or null if the folder is gone. */
 	public function resolveRoot(Site $site): ?Folder {
 		$ownerFolder = $this->rootFolder->getUserFolder($site->getOwnerUid());
-		$nodes = $ownerFolder->getById($site->getRootFileId());
-		foreach ($nodes as $node) {
-			if ($node instanceof Folder) {
-				return $node;
-			}
-		}
-		return null;
+		$node = $ownerFolder->getFirstNodeById($site->getRootFileId());
+		return $node instanceof Folder ? $node : null;
 	}
 
 	/** Raw markdown of a page. Throws NotFoundException if missing or outside root. */

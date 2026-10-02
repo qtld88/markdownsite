@@ -58,8 +58,7 @@ class SiteController extends Controller {
 		$uid = $user->getUID();
 		// Validate the folder is accessible to the creator.
 		$userFolder = $this->rootFolder->getUserFolder($uid);
-		$nodes = $userFolder->getById($rootFileId);
-		if (count($nodes) === 0 || !($nodes[0] instanceof \OCP\Files\Folder)) {
+		if (!($userFolder->getFirstNodeById($rootFileId) instanceof \OCP\Files\Folder)) {
 			return new JSONResponse(['error' => 'folder-not-found'], 400);
 		}
 		$site = new Site();
