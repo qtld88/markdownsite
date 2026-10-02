@@ -1,6 +1,6 @@
 # MarkdownSite
 
-Turn any folder of Markdown files into a browsable, read-only wiki site inside Nextcloud.
+Turn any folder of Markdown files into a browsable wiki site inside Nextcloud, editable in place.
 
 Supports Obsidian-style wikilinks, embeds, and YAML frontmatter. Links resolve by page name, so a synced Obsidian vault or any Markdown folder just works — no renaming, no export step. Content stays editable in the Files app or via desktop sync; the reader reflects changes live.
 
@@ -10,7 +10,8 @@ Supports Obsidian-style wikilinks, embeds, and YAML frontmatter. Links resolve b
 
 - **Read a folder as a wiki** — pick any folder you own, MarkdownSite renders it as a navigable site with a page tree, no conversion step.
 - **Obsidian-compatible links** — `[[wikilinks]]`, `[[Page|custom labels]]`, and embeds resolve by page name across the whole folder, not just relative paths. Broken links render struck-through instead of 404ing.
-- **Share without a Files share** — grant a user or group access to a site without giving them Nextcloud Files access to the underlying folder. Sharing is owner-only: recipients can read, never re-share or manage.
+- **Share without a Files share** — grant a user or group access to a site without giving them Nextcloud Files access to the underlying folder, as a reader or an editor. Only the owner manages shares.
+- **Edit in place** — press `E` or the pencil: live preview like Obsidian, autosave, `[[` completion, drag-and-drop images. Create, rename, move (links are updated) and delete pages and folders from the tree.
 - **Reveal-active-file navigation** — the tree auto-expands and scrolls to whichever page is open, with a per-user toggle to turn it off.
 - **Outline, breadcrumb, previous/next** — a sticky "On this page" outline, a breadcrumb, and previous/next links in tree order. Folder notes (`Folder/Folder.md`, `index.md`, `README.md`) open when their folder is clicked.
 - **Code and diagrams** — highlighted code blocks with a copy button, and Mermaid diagrams, loaded only on pages that use them.

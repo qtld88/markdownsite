@@ -3,6 +3,17 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.0.0] - 2026-10-02
+
+### Added
+- Editing: owners and editors edit pages in place with an Obsidian-style live preview. Changes save automatically; a page changed elsewhere is detected and never overwritten silently.
+- File management from the page tree: new page, new folder, folder note, rename, drag-and-drop to move, delete (to the trash bin). Links to a renamed or moved page are updated after confirmation.
+- Images dropped or pasted into a page are stored in the vault's attachment folder (Obsidian setting) and embedded.
+- Shares have a role: Reader or Editor.
+
+### Changed
+- Pages load faster on large sites: the link index is cached.
+
 ## [1.5.0] - 2026-10-02
 
 ### Added
