@@ -10,16 +10,27 @@
 					<tr>
 						<th>{{ t('markdownsite', 'Type') }}</th>
 						<th>{{ t('markdownsite', 'Shared with') }}</th>
+						<th>{{ t('markdownsite', 'Role') }}</th>
 						<th></th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-if="!(shareMap[site.id] || []).length">
-						<td colspan="3" class="mds-empty">{{ t('markdownsite', 'No shares yet.') }}</td>
+						<td colspan="4" class="mds-empty">{{ t('markdownsite', 'No shares yet.') }}</td>
 					</tr>
 					<tr v-for="(s, i) in shareMap[site.id] || []" :key="s.type + ':' + s.with">
 						<td>{{ s.type === 'group' ? t('markdownsite', 'Group') : t('markdownsite', 'User') }}</td>
 						<td>{{ s.with }}</td>
+						<td class="mds-share-role">
+							<NcSelect :model-value="roleOption(s.role)"
+								:options="roleOptions"
+								:clearable="false"
+								:searchable="false"
+								label="label"
+								:input-label="t('markdownsite', 'Role')"
+								:label-outside="true"
+								@update:model-value="opt => setRole(site, s, opt)" />
+						</td>
 						<td>
 							<NcButton type="tertiary" @click="removeShare(site, i)">
 								{{ t('markdownsite', 'Unshare') }}
@@ -46,7 +57,7 @@ import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import { useSitesStore } from '../stores/sites.js'
-import { getShares, searchSharees, shareSite } from '../services/api.js'
+import { getShares, searchSharees, shareSite, updateShareRole } from '../services/api.js'
 
 export default {
 	name: 'SharingSettings',
@@ -57,6 +68,12 @@ export default {
 	},
 	computed: {
 		ownedSites() { return this.store.sites.filter(s => s.isOwner) },
+		roleOptions() {
+			return [
+				{ id: 'reader', label: t('markdownsite', 'Reader') },
+				{ id: 'editor', label: t('markdownsite', 'Editor') },
+			]
+		},
 	},
 	watch: {
 		ownedSites: {
@@ -69,6 +86,24 @@ export default {
 	methods: {
 		async loadShares(siteId) {
 			this.shareMap = { ...this.shareMap, [siteId]: await getShares(siteId) }
+		},
+		roleOption(role) {
+			return this.roleOptions.find(o => o.id === role) || this.roleOptions[0]
+		},
+		async setRole(site, share, option) {
+			if (!option || option.id === share.role) {
+				return
+			}
+			try {
+				await updateShareRole(site.id, share.id, option.id)
+				this.shareMap = {
+					...this.shareMap,
+					[site.id]: this.shareMap[site.id].map(s => (s.id === share.id ? { ...s, role: option.id } : s)),
+				}
+			} catch (e) {
+				const { showError } = await import('@nextcloud/dialogs')
+				showError(t('markdownsite', 'Could not update sharing'))
+			}
 		},
 		optionsFor(siteId) {
 			return this.searchResults[siteId] || []
@@ -101,7 +136,7 @@ export default {
 		async addShare(site, opt) {
 			if (!opt) { return }
 			const current = this.shareMap[site.id] || []
-			const next = [...current, { type: opt.type, with: opt.id }]
+			const next = [...current, { type: opt.type, with: opt.id, role: 'reader' }]
 			await this.persist(site, next)
 		},
 		async removeShare(site, index) {
@@ -112,7 +147,8 @@ export default {
 		async persist(site, shares) {
 			try {
 				await shareSite(site.id, shares)
-				this.shareMap = { ...this.shareMap, [site.id]: shares }
+				// Reload: replacing the list gives the shares new ids.
+				await this.loadShares(site.id)
 				const { showSuccess } = await import('@nextcloud/dialogs')
 				showSuccess(t('markdownsite', 'Sharing updated'))
 			} catch (e) {
@@ -142,4 +178,5 @@ export default {
 	padding: 4px 8px; border-bottom: 1px solid var(--color-border);
 }
 .mds-share-table td.mds-empty { padding: 10px 8px; }
+.mds-share-role { min-width: 140px; }
 </style>
