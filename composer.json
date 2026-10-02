@@ -22,7 +22,7 @@
         "psr-4": { "OCA\\MarkdownSite\\Tests\\": "tests/" }
     },
     "scripts": {
-        "lint": "php -l lib/",
+        "lint": "find lib tests -name '*.php' -print0 | xargs -0 -n1 php -l",
         "test": "phpunit"
     },
     "config": { "platform": { "php": "8.1" }, "sort-packages": true }
