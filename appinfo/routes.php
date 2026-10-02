@@ -10,6 +10,7 @@ return [
 		['name' => 'site#destroy', 'url' => '/sites/{id}', 'verb' => 'DELETE'],
 		['name' => 'site#share', 'url' => '/sites/{id}/share', 'verb' => 'POST'],
 		['name' => 'site#shares', 'url' => '/sites/{id}/shares', 'verb' => 'GET'],
+		['name' => 'site#updateShare', 'url' => '/sites/{id}/shares/{shareId}', 'verb' => 'PUT'],
 		['name' => 'sharee#index', 'url' => '/sharees', 'verb' => 'GET'],
 		['name' => 'preferences#index', 'url' => '/prefs', 'verb' => 'GET'],
 		['name' => 'preferences#update', 'url' => '/prefs', 'verb' => 'PUT'],
