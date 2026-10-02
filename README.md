@@ -13,6 +13,7 @@ Supports Obsidian-style wikilinks, embeds, and YAML frontmatter. Links resolve b
 - **Share without a Files share** — grant a user or group access to a site without giving them Nextcloud Files access to the underlying folder. Sharing is owner-only: recipients can read, never re-share or manage.
 - **Reveal-active-file navigation** — the tree auto-expands and scrolls to whichever page is open, with a per-user toggle to turn it off.
 - **Outline, breadcrumb, previous/next** — a sticky "On this page" outline, a breadcrumb, and previous/next links in tree order. Folder notes (`Folder/Folder.md`, `index.md`, `README.md`) open when their folder is clicked.
+- **Code and diagrams** — highlighted code blocks with a copy button, and Mermaid diagrams, loaded only on pages that use them.
 - **Themeable link appearance** — underline, bold, and colour are configurable per user, with a live preview.
 
 ![Settings](screenshots/settings.jpg)

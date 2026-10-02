@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkmarkdownsite=self.webpackChunkmarkdownsite||[]).push([["hljs-shell"],{6340(s,e,a){function n(s){return{name:"Shell Session",aliases:["console","shellsession"],contains:[{className:"meta.prompt",begin:/^\s{0,3}[./~\w\d[\]()@-]*[>%$#][ ]?/,starts:{end:/[^\\](?=\s*$)/,subLanguage:"bash"}}]}}a.r(e),a.d(e,{default:()=>n})}}]);
+//# sourceMappingURL=markdownsite-hljs-shell.js.map?v=b0ee47d63768289d6df2

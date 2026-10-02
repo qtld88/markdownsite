@@ -3,6 +3,15 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.4.0] - 2026-10-02
+
+### Added
+- Syntax highlighting for code blocks, with the language name and a copy button on each block. Light and dark colours follow the Nextcloud theme.
+- Mermaid diagrams (```` ```mermaid ````) are drawn. An invalid diagram shows "Invalid diagram" and its source.
+
+### Changed
+- The interface script is split into parts loaded on demand: pages without code or diagrams load less.
+
 ## [1.3.0] - 2026-10-02
 
 ### Added
