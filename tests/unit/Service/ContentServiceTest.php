@@ -116,4 +116,20 @@ class ContentServiceTest extends TestCase {
 			['name' => 'Home', 'path' => 'Home.md', 'type' => 'page'],
 		], $this->content()->listTree($root));
 	}
+
+	public function testListMarkdownEtagsWalksFoldersWithoutReadingFiles(): void {
+		$page = fn (string $name, string $etag) => $this->fileWithEtag($name, $etag);
+		$deep = $this->folder('Deep', [$page('Inner.md', 'e3')]);
+		$root = $this->folder('Wiki', [$page('Home.md', 'e1'), $deep, $page('image.png', 'e9'), $page('.draft.md', 'e8')]);
+		$this->assertSame(['Home.md' => 'e1', 'Deep/Inner.md' => 'e3'], $this->content()->listMarkdownEtags($root));
+		$this->assertSame(['Home.md', 'Deep/Inner.md'], $this->content()->listMarkdownPaths($root));
+	}
+
+	private function fileWithEtag(string $name, string $etag): File {
+		$file = $this->createMock(File::class);
+		$file->method('getName')->willReturn($name);
+		$file->method('getEtag')->willReturn($etag);
+		$file->expects($this->never())->method('getContent');
+		return $file;
+	}
 }

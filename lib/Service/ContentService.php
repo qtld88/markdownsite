@@ -115,11 +115,24 @@ class ContentService {
 
 	/** All .md paths under root, relative to root. @return string[] */
 	public function listMarkdownPaths(Folder $root, string $rel = ''): array {
+		return array_map('strval', array_keys($this->listMarkdownEtags($root, $rel)));
+	}
+
+	/**
+	 * All .md files under root with their etag, read from file metadata: no
+	 * file is opened. @return array<string,string> path relative to root => etag
+	 */
+	public function listMarkdownEtags(Folder $root, string $rel = ''): array {
 		$base = $rel === '' ? $root : $root->get($rel);
 		if (!($base instanceof Folder)) {
 			return [];
 		}
-		$paths = [];
+		return $this->collectMarkdown($base, $rel);
+	}
+
+	/** @return array<string,string> */
+	private function collectMarkdown(Folder $base, string $rel): array {
+		$out = [];
 		foreach ($base->getDirectoryListing() as $node) {
 			$name = $node->getName();
 			if (str_starts_with($name, '.')) {
@@ -127,11 +140,11 @@ class ContentService {
 			}
 			$path = $rel === '' ? $name : $rel . '/' . $name;
 			if ($node instanceof Folder) {
-				$paths = array_merge($paths, $this->listMarkdownPaths($root, $path));
+				$out += $this->collectMarkdown($node, $path);
 			} elseif (preg_match('/\.md$/i', $name)) {
-				$paths[] = $path;
+				$out[$path] = $node->getEtag();
 			}
 		}
-		return $paths;
+		return $out;
 	}
 }
