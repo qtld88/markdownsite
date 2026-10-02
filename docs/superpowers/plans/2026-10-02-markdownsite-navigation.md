@@ -22,7 +22,8 @@
 5. **`folderNote()` returns the note's file name** (as stored, e.g. `ReadMe.MD`), not a path; callers prefix the folder path. A sub-folder named `index.md` is not a note.
 6. **The root's own note stays in the tree.** The spec removes a note from its folder's children; the site root is not a tree entry, so its home page stays visible at the top level.
 7. **Breadcrumb collapse is custom**, not `NcBreadcrumbs`: `NcBreadcrumb` has no click event, and a folder without a note must reveal itself in the tree. Below 1024 px every folder except the last is hidden behind `…`.
-8. **Tree open state moves to a Pinia store** (`src/stores/tree.js`). `PageTree` is recursive and kept its open map per level, so nothing outside could reveal a folder. The store is cleared when the site changes.
+8. **Tree open state moves to a Pinia store** (`src/stores/tree.js`). `PageTree` is recursive and kept its open map per level, so nothing outside could reveal a folder. The store is cleared when the site changes (ids compared as text: the route holds a string, the store a number).
+13. **Existing bug fixed on the way: clicking a folder without a note opened the site's home page.** `NcAppNavigationItem` renders such an entry as `<a href="#">` and does not cancel the click, so the hash router went to `/` and `sync()` redirected to the home page. `PageTree` now calls `preventDefault()` for those clicks (found with headless Chromium on `nextcloud:31`).
 9. **TOC threshold counts all headings** (`toc.length >= 3`), as the spec says, before level filtering.
 10. **Vitest 3.2, not 5.** Vitest 5 requires Node ≥ 22.12; `package.json` declares Node ≥ 20. Tests live in `tests/js/` (outside `src/`, so webpack and ESLint ignore them) and run in Node; nothing in this plan needs a DOM. The script is `vitest run --dir tests/js`: without `--dir`, Vitest also runs the copy of the tests that `scripts/smoke.sh` stages in `.smoke/`.
 11. **Scroll offsets.** The navigation toggle button sits in the top-left corner of the content area, so the page layout gets 52 px of left padding.
@@ -1357,7 +1358,7 @@ export const useTreeStore = defineStore('tree', {
 			:data-mds-path="node.path"
 			:to="routeFor(node)"
 			@update:open="v => tree.setOpen(node.path, v)"
-			@click="onItemClick(node)">
+			@click="ev => onItemClick(node, ev)">
 			<template #icon>
 				<NcIconSvgWrapper v-if="node.type === 'dir'" :path="mdiFolder" :size="20" />
 				<NcIconSvgWrapper v-else :path="mdiFileDocumentOutline" :size="20" />
@@ -1414,8 +1415,12 @@ export default {
 			const path = node.type === 'page' ? node.path : node.note
 			return path ? { name: 'page', params: { siteId: this.siteId, path } } : undefined
 		},
-		onItemClick(node) {
+		onItemClick(node, event) {
 			if (node.type !== 'dir') { return }
+			if (!node.note) {
+				// The entry is an <a href="#">: following it would open the site's home page.
+				event?.preventDefault()
+			}
 			// A folder with a note opens the note (via `to`) and expands;
 			// a folder without one toggles, like the chevron.
 			this.tree.setOpen(node.path, node.note ? true : !this.isOpen(node))
@@ -1807,7 +1812,12 @@ with
 			}
 			this.sync()
 		},
-		activeSiteId() { this.treeState.clear() },
+		activeSiteId(next, prev) {
+			// The id is a string in the route and a number in the store: compare as text.
+			if (String(next) !== String(prev)) {
+				this.treeState.clear()
+			}
+		},
 	},
 ```
 
