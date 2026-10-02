@@ -1,4 +1,5 @@
 import './publicPath.js'
+import './styles/content.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
