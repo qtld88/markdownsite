@@ -6,10 +6,12 @@
 			:name="node.name"
 			:allow-collapse="node.type === 'dir'"
 			:open="isOpen(node)"
-			:active="node.path === activePath"
-			:data-mds-active="node.path === activePath || null"
-			:to="node.type === 'page' ? pageRoute(node) : undefined"
-			@click="onItemClick(node)">
+			:active="isActive(node)"
+			:data-mds-active="isActive(node) || null"
+			:data-mds-path="node.path"
+			:to="routeFor(node)"
+			@update:open="v => tree.setOpen(node.path, v)"
+			@click="ev => onItemClick(node, ev)">
 			<template #icon>
 				<NcIconSvgWrapper v-if="node.type === 'dir'" :path="mdiFolder" :size="20" />
 				<NcIconSvgWrapper v-else :path="mdiFileDocumentOutline" :size="20" />
@@ -25,6 +27,7 @@
 import NcAppNavigationItem from '@nextcloud/vue/components/NcAppNavigationItem'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import { mdiFolder, mdiFileDocumentOutline } from '@mdi/js'
+import { useTreeStore } from '../stores/tree.js'
 
 export default {
 	name: 'PageTree',
@@ -37,7 +40,7 @@ export default {
 		// (the "always show current open file" preference, off).
 		activePath: { type: String, default: '' },
 	},
-	data() { return { openMap: {}, mdiFolder, mdiFileDocumentOutline } },
+	setup() { return { tree: useTreeStore(), mdiFolder, mdiFileDocumentOutline } },
 	computed: {
 		activeAncestors() {
 			if (!this.activePath) { return new Set() }
@@ -53,17 +56,27 @@ export default {
 	},
 	methods: {
 		isOpen(node) {
-			// An explicit user toggle always wins over the reveal default.
-			if (node.path in this.openMap) { return this.openMap[node.path] }
+			// An explicit toggle (user click, breadcrumb reveal) wins over the reveal default.
+			if (node.path in this.tree.openMap) { return this.tree.openMap[node.path] }
 			return this.activeAncestors.has(node.path)
 		},
-		setOpen(node, v) { this.openMap = { ...this.openMap, [node.path]: v } },
-		onItemClick(node) {
-			// Folder rows have no route; clicking the row toggles open (like the chevron).
-			if (node.type === 'dir') { this.setOpen(node, !this.isOpen(node)) }
+		// A folder whose note is open counts as the active entry.
+		isActive(node) {
+			return !!this.activePath && (node.path === this.activePath || node.note === this.activePath)
 		},
-		pageRoute(node) {
-			return { name: 'page', params: { siteId: this.siteId, path: node.path } }
+		routeFor(node) {
+			const path = node.type === 'page' ? node.path : node.note
+			return path ? { name: 'page', params: { siteId: this.siteId, path } } : undefined
+		},
+		onItemClick(node, event) {
+			if (node.type !== 'dir') { return }
+			if (!node.note) {
+				// The entry is an <a href="#">: following it would open the site's home page.
+				event?.preventDefault()
+			}
+			// A folder with a note opens the note (via `to`) and expands;
+			// a folder without one toggles, like the chevron.
+			this.tree.setOpen(node.path, node.note ? true : !this.isOpen(node))
 		},
 	},
 }
