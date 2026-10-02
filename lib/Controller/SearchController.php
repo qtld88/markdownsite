@@ -62,7 +62,7 @@ class SearchController extends Controller {
 		// findVisible() already filters by share; checking again keeps one rule for both cases.
 		$readable = array_values(array_filter(
 			$candidates,
-			fn (Site $s) => $this->access->canView($s, $uid, $groups, $this->shareMapper->findBySite($s->getId())),
+			fn (Site $s) => $this->access->roleFor($s, $uid, $groups, $this->shareMapper->findBySite($s->getId())) !== null,
 		));
 		if ($site !== null && $readable === []) {
 			return new JSONResponse(['error' => 'forbidden'], 403);
