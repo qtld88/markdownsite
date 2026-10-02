@@ -15,3 +15,4 @@ export const getPage = (siteId, path) => axios.get(base(`/s/${siteId}/page/${enc
 export const assetUrl = (siteId, path) => base(`/s/${siteId}/file/${encPath(path)}`)
 export const getPrefs = () => axios.get(base('/prefs')).then(r => r.data)
 export const savePrefs = (p) => axios.put(base('/prefs'), p).then(r => r.data)
+export const searchPages = (params, signal) => axios.get(base('/search'), { params, signal }).then(r => r.data)
