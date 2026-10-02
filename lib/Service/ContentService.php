@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\MarkdownSite\Service;
 
 use OCA\MarkdownSite\Db\Site;
+use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
@@ -26,7 +27,7 @@ class ContentService {
 	/** Raw markdown of a page. Throws NotFoundException if missing or outside root. */
 	public function getPageContent(Folder $root, string $relPath): string {
 		$node = $this->getChild($root, $relPath);
-		if ($node instanceof \OCP\Files\File) {
+		if ($node instanceof File) {
 			return $node->getContent();
 		}
 		throw new NotFoundException($relPath);
@@ -50,24 +51,55 @@ class ContentService {
 	}
 
 	/**
-	 * Recursive tree of folders and .md files, paths relative to root.
-	 * @return array<int,array{name:string,path:string,type:string,children?:array}>
+	 * Recursive tree of folders and .md files, paths relative to root. A
+	 * folder with a folder note (see folderNote()) gets `note` = the note's
+	 * path, and the note is left out of its children.
+	 * @return array<int,array{name:string,path:string,type:string,children?:array,note?:string}>
 	 */
 	public function listTree(Folder $root, string $rel = ''): array {
 		$base = $rel === '' ? $root : $root->get($rel);
 		if (!($base instanceof Folder)) {
 			return [];
 		}
+		return $this->listFolder($base, $rel, null);
+	}
+
+	/**
+	 * File name of $folder's folder note, or null. Looked up case-insensitively
+	 * in this order: `<FolderName>.md`, `index.md`, `README.md`.
+	 */
+	public function folderNote(Folder $folder): ?string {
+		$files = [];
+		foreach ($folder->getDirectoryListing() as $node) {
+			if ($node instanceof File) {
+				$files[mb_strtolower($node->getName())] ??= $node->getName();
+			}
+		}
+		foreach ([mb_strtolower($folder->getName()) . '.md', 'index.md', 'readme.md'] as $candidate) {
+			if (isset($files[$candidate])) {
+				return $files[$candidate];
+			}
+		}
+		return null;
+	}
+
+	/** @return array<int,array{name:string,path:string,type:string,children?:array,note?:string}> */
+	private function listFolder(Folder $base, string $rel, ?string $skip): array {
 		$out = [];
 		foreach ($base->getDirectoryListing() as $node) {
 			$name = $node->getName();
-			if (str_starts_with($name, '.')) {
+			if (str_starts_with($name, '.') || $name === $skip) {
 				continue;
 			}
 			$path = $rel === '' ? $name : $rel . '/' . $name;
 			if ($node instanceof Folder) {
-				$out[] = ['name' => $name, 'path' => $path, 'type' => 'dir',
-					'children' => $this->listTree($root, $path)];
+				$note = $this->folderNote($node);
+				$entry = ['name' => $name, 'path' => $path, 'type' => 'dir',
+					'children' => $this->listFolder($node, $path, $note)];
+				if ($note !== null) {
+					$entry['note'] = $path . '/' . $note;
+				}
+				$out[] = $entry;
 			} elseif (preg_match('/\.md$/i', $name)) {
 				$out[] = ['name' => preg_replace('/\.md$/i', '', $name), 'path' => $path, 'type' => 'page'];
 			}

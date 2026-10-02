@@ -18,7 +18,6 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;
-use OCP\Files\NotFoundException;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IURLGenerator;
@@ -81,16 +80,15 @@ class PageController extends Controller {
 			'path' => $path,
 			'html' => $rendered['html'],
 			'meta' => $rendered['meta'],
+			'toc' => $rendered['toc'],
 		]);
 	}
 
+	/** The root's folder note (`<RootName>.md`, `index.md`, `README.md`), else the first page. */
 	private function homePath(\OCP\Files\Folder $root): ?string {
-		foreach (['Readme.md', 'README.md', 'readme.md', 'index.md', 'Index.md'] as $name) {
-			try {
-				$root->get($name);
-				return $name;
-			} catch (NotFoundException) {
-			}
+		$note = $this->content->folderNote($root);
+		if ($note !== null) {
+			return $note;
 		}
 		$md = $this->content->listMarkdownPaths($root);
 		return $md[0] ?? null;
