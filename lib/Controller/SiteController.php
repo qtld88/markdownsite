@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\MarkdownSite\Controller;
 
+use OCA\MarkdownSite\Db\SearchMapper;
 use OCA\MarkdownSite\Db\Site;
 use OCA\MarkdownSite\Db\SiteMapper;
 use OCA\MarkdownSite\Db\SiteShare;
@@ -24,6 +25,7 @@ class SiteController extends Controller {
 		private IUserSession $userSession,
 		private IGroupManager $groupManager,
 		private IRootFolder $rootFolder,
+		private SearchMapper $searchIndex,
 	) {
 		parent::__construct('markdownsite', $request);
 	}
@@ -83,6 +85,7 @@ class SiteController extends Controller {
 			return $site;
 		}
 		$this->shares->deleteBySite($id);
+		$this->searchIndex->deleteBySite($id);
 		$this->sites->delete($site);
 		return new JSONResponse(['ok' => true]);
 	}

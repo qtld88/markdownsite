@@ -13,6 +13,7 @@ return [
 		['name' => 'sharee#index', 'url' => '/sharees', 'verb' => 'GET'],
 		['name' => 'preferences#index', 'url' => '/prefs', 'verb' => 'GET'],
 		['name' => 'preferences#update', 'url' => '/prefs', 'verb' => 'PUT'],
+		['name' => 'search#search', 'url' => '/search', 'verb' => 'GET'],
 		['name' => 'page#tree', 'url' => '/s/{siteId}/tree', 'verb' => 'GET'],
 		['name' => 'page#page', 'url' => '/s/{siteId}/page/{path}', 'verb' => 'GET',
 			'requirements' => ['path' => '.+']],
