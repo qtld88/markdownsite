@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace OCA\MarkdownSite\AppInfo;
 
+use OCA\MarkdownSite\Listener\CspListener;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
-use OCP\AppFramework\Http\ContentSecurityPolicy;
 use OCP\Security\CSP\AddContentSecurityPolicyEvent;
 
 class Application extends App implements IBootstrap {
@@ -27,15 +27,9 @@ class Application extends App implements IBootstrap {
 	}
 
 	public function register(IRegistrationContext $context): void {
+		$context->registerEventListener(AddContentSecurityPolicyEvent::class, CspListener::class);
 	}
 
 	public function boot(IBootContext $context): void {
-		$context->injectFn(function (AddContentSecurityPolicyEvent $event) {
-			$policy = new ContentSecurityPolicy();
-			$policy->addAllowedImageDomain('https:');
-			$policy->addAllowedImageDomain('data:');
-			$policy->addAllowedImageDomain('blob:');
-			$event->addPolicy($policy);
-		});
 	}
 }
