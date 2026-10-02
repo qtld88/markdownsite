@@ -17,3 +17,11 @@
 - Intermediate commits do not include `js/` (a build rewrites the source map each time); only the release commit does.
 - Smoke 31 (curl): tree marks `Projects/Projects.md` as folder note; page API returns `toc` ids and `mds-` heading ids; `tocCollapsed` preference round-trips.
 - Smoke 31 (headless Chromium, 1600 px wide): side outline visible and sticky, TOC click scrolls to `#third-section` and highlights it, collapse persists after reload, breadcrumb "Smoke > Guides > Long page", Previous/Next cards navigate, clicking folder "Projects" opens its note, at 800 px the side outline is replaced by the collapsible inline "On this page" block, no console errors.
+
+## Plan C: Code highlighting and Mermaid (1.4.0)
+
+- Tasks 1-10 done as written, one commit each; every Expected line matched (69 PHP tests, 32 Vitest tests, build with 2 warnings, 34 `markdownsite-hljs-*.js` chunks).
+- Task 5 only: the "fails first" `npm test` showed a Vite import-resolution error (output trimmed); the failing state is the same as the plan describes.
+- Release commit: `js/` now holds 198 files (about 27 MB, sources maps included); no absolute local path appears in any of them. Intermediate commits do not include `js/`.
+- Rebuilding rewrites `js/markdownsite-main.js.map` only (non-deterministic), so it is discarded outside release commits.
+- Smoke 31 (headless Chromium): "New site -> Choose folder..." opens the file picker (chunk path fix); the README page loads no highlight chunk; the Code page loads `hljs-core`, `hljs-yaml`, `hljs-bash`, `hljs-python`; labels bash/python/yaml/dataview; copy puts the raw text on the clipboard; the Diagrams page renders one SVG diagram and one "Invalid diagram" box with the source; dark theme (`data-themes="dark"`) keeps code and diagram readable; no console errors, no 4xx on app assets.
