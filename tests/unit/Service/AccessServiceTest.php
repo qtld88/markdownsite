@@ -25,19 +25,21 @@ class AccessServiceTest extends TestCase {
 		return $site;
 	}
 
-	private function userShare(string $uid): SiteShare {
+	private function userShare(string $uid, string $role = 'reader'): SiteShare {
 		$s = new SiteShare();
 		$s->setSiteId(1);
 		$s->setShareType('user');
 		$s->setShareWith($uid);
+		$s->setRole($role);
 		return $s;
 	}
 
-	private function groupShare(string $gid): SiteShare {
+	private function groupShare(string $gid, string $role = 'reader'): SiteShare {
 		$s = new SiteShare();
 		$s->setSiteId(1);
 		$s->setShareType('group');
 		$s->setShareWith($gid);
+		$s->setRole($role);
 		return $s;
 	}
 
@@ -76,5 +78,36 @@ class AccessServiceTest extends TestCase {
 		$shares = [$this->groupShare('bob')];
 		$this->assertFalse($this->access->canView($site, 'bob', [], $shares));
 		$this->assertTrue($this->access->canView($site, 'bob', ['bob'], $shares));
+	}
+
+	public function testRoleForOwner(): void {
+		$this->assertSame('owner', $this->access->roleFor($this->site('alice'), 'alice', [], [$this->userShare('alice')]));
+	}
+
+	public function testRoleForEditorAndReader(): void {
+		$site = $this->site('alice');
+		$this->assertSame('editor', $this->access->roleFor($site, 'bob', [], [$this->userShare('bob', 'editor')]));
+		$this->assertSame('reader', $this->access->roleFor($site, 'bob', [], [$this->userShare('bob')]));
+	}
+
+	public function testUserAndGroupSharesGiveTheStrongestRole(): void {
+		$site = $this->site('alice');
+		$shares = [$this->userShare('bob'), $this->groupShare('staff', 'editor')];
+		$this->assertSame('editor', $this->access->roleFor($site, 'bob', ['staff'], $shares));
+		$shares = [$this->userShare('bob', 'editor'), $this->groupShare('staff')];
+		$this->assertSame('editor', $this->access->roleFor($site, 'bob', ['staff'], $shares));
+	}
+
+	public function testRoleForNoMatchIsNull(): void {
+		$shares = [$this->userShare('bob', 'editor'), $this->groupShare('staff', 'editor')];
+		$this->assertNull($this->access->roleFor($this->site('alice'), 'carol', ['visitors'], $shares));
+	}
+
+	public function testCanEdit(): void {
+		$site = $this->site('alice');
+		$this->assertTrue($this->access->canEdit($site, 'alice', [], []));
+		$this->assertTrue($this->access->canEdit($site, 'bob', [], [$this->userShare('bob', 'editor')]));
+		$this->assertFalse($this->access->canEdit($site, 'bob', [], [$this->userShare('bob')]));
+		$this->assertFalse($this->access->canEdit($site, 'carol', [], [$this->userShare('bob', 'editor')]));
 	}
 }

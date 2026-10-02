@@ -13,15 +13,19 @@ use OCP\AppFramework\Db\Entity;
  * @method void setShareType(string $v)
  * @method string getShareWith()
  * @method void setShareWith(string $v)
+ * @method string getRole()
+ * @method void setRole(string $v)
  */
 class SiteShare extends Entity {
 	protected int $siteId = 0;
 	protected string $shareType = '';   // 'user' | 'group'
 	protected string $shareWith = '';
+	protected string $role = 'reader'; // 'reader' | 'editor'
 
 	public function __construct() {
 		$this->addType('siteId', 'integer');
 		$this->addType('shareType', 'string');
 		$this->addType('shareWith', 'string');
+		$this->addType('role', 'string');
 	}
 }
