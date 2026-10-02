@@ -98,6 +98,7 @@ cd <source-repo>
 COPYFILE_DISABLE=1 tar --exclude='.git' --exclude='.github' --exclude='.claude' \
   --exclude='.tmp' --exclude='.DS_Store' --exclude='node_modules' \
   --exclude='.env*' --exclude='*.key' --exclude='screenshots' \
+  --exclude='./scripts' --exclude='./tests/fixtures' --exclude='./.smoke' \
   --exclude='<any-other-gitignored-sensitive-dir>' \
   -cf - . | tar -xf - -C "$PKGROOT/<app_id>/"
 cd "$PKGROOT"
