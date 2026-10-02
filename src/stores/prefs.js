@@ -8,6 +8,7 @@ export const usePrefsStore = defineStore('prefs', {
 		linkBold: true,
 		revealActive: true,
 		tocCollapsed: false,
+		searchScope: 'site',
 		loaded: false,
 	}),
 	getters: {
@@ -30,6 +31,7 @@ export const usePrefsStore = defineStore('prefs', {
 				linkBold: this.linkBold,
 				revealActive: this.revealActive,
 				tocCollapsed: this.tocCollapsed,
+				searchScope: this.searchScope,
 			}))
 		},
 	},

@@ -43,4 +43,13 @@ class PreferencesControllerTest extends TestCase {
 		$this->assertSame('1', $this->store['toc_collapsed']);
 		$this->assertTrue($this->controller()->index()->getData()['tocCollapsed']);
 	}
+
+	public function testSearchScopeDefaultsToSite(): void {
+		$this->assertSame('site', $this->controller()->index()->getData()['searchScope']);
+	}
+
+	public function testSearchScopeIsSavedAndValidated(): void {
+		$this->assertSame('all', $this->controller()->update('', true, true, true, false, 'all')->getData()['searchScope']);
+		$this->assertSame('site', $this->controller()->update('', true, true, true, false, 'everything')->getData()['searchScope']);
+	}
 }

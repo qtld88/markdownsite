@@ -32,7 +32,7 @@ class PreferencesController extends Controller {
 	}
 
 	#[NoAdminRequired]
-	public function update(string $linkColor = '', bool $linkUnderline = true, bool $linkBold = true, bool $revealActive = true, bool $tocCollapsed = false): JSONResponse {
+	public function update(string $linkColor = '', bool $linkUnderline = true, bool $linkBold = true, bool $revealActive = true, bool $tocCollapsed = false, string $searchScope = 'site'): JSONResponse {
 		$user = $this->userSession->getUser();
 		if ($user === null) {
 			return new JSONResponse(['error' => 'unauthenticated'], 401);
@@ -45,10 +45,11 @@ class PreferencesController extends Controller {
 		$this->config->setUserValue($uid, self::APP, 'link_bold', $linkBold ? '1' : '0');
 		$this->config->setUserValue($uid, self::APP, 'reveal_active', $revealActive ? '1' : '0');
 		$this->config->setUserValue($uid, self::APP, 'toc_collapsed', $tocCollapsed ? '1' : '0');
+		$this->config->setUserValue($uid, self::APP, 'search_scope', $searchScope === 'all' ? 'all' : 'site');
 		return new JSONResponse($this->read($uid));
 	}
 
-	/** @return array{linkColor:string,linkUnderline:bool,linkBold:bool,revealActive:bool,tocCollapsed:bool} */
+	/** @return array{linkColor:string,linkUnderline:bool,linkBold:bool,revealActive:bool,tocCollapsed:bool,searchScope:string} */
 	private function read(string $uid): array {
 		return [
 			'linkColor' => $this->config->getUserValue($uid, self::APP, 'link_color', ''),
@@ -56,6 +57,7 @@ class PreferencesController extends Controller {
 			'linkBold' => $this->config->getUserValue($uid, self::APP, 'link_bold', '1') === '1',
 			'revealActive' => $this->config->getUserValue($uid, self::APP, 'reveal_active', '1') === '1',
 			'tocCollapsed' => $this->config->getUserValue($uid, self::APP, 'toc_collapsed', '0') === '1',
+			'searchScope' => $this->config->getUserValue($uid, self::APP, 'search_scope', 'site') === 'all' ? 'all' : 'site',
 		];
 	}
 }
