@@ -3,7 +3,8 @@
 		<NcAppNavigation>
 			<template v-if="store.sites.length">
 				<SiteSwitcher />
-				<PageTree v-if="activeSiteId" :nodes="tree" :site-id="activeSiteId"
+				<SearchPanel :site-id="activeSiteId" @update:active="v => searching = v" />
+				<PageTree v-if="activeSiteId && !searching" :nodes="tree" :site-id="activeSiteId"
 					:active-path="prefs.revealActive ? currentPath : ''" />
 			</template>
 			<template #footer>
@@ -79,6 +80,8 @@ import { getTree, getPage } from '../services/api.js'
 import { decorateCallouts } from '../services/calloutCopy.js'
 import { decorateCode } from '../services/codeHighlight.js'
 import { renderDiagrams } from '../services/mermaid.js'
+import { highlightTerms } from '../services/searchHighlight.js'
+import { parseQuery } from '../services/searchText.js'
 import { headingElement, safeDecode, splitHash } from '../services/anchors.js'
 import { enableTaskLists } from '../services/taskList.js'
 import { useSitesStore } from '../stores/sites.js'
@@ -89,6 +92,7 @@ import PageTree from '../components/PageTree.vue'
 import PageToc from '../components/PageToc.vue'
 import PageBreadcrumb from '../components/PageBreadcrumb.vue'
 import PagePager from '../components/PagePager.vue'
+import SearchPanel from '../components/SearchPanel.vue'
 import NewSiteDialog from '../components/NewSiteDialog.vue'
 import SettingsDialog from '../components/SettingsDialog.vue'
 
@@ -96,7 +100,7 @@ export default {
 	name: 'WikiView',
 	components: {
 		NcContent, NcAppNavigation, NcAppContent, NcButton, NcEmptyContent, NcLoadingIcon, NcIconSvgWrapper,
-		SiteSwitcher, PageTree, PageToc, PageBreadcrumb, PagePager, NewSiteDialog, SettingsDialog,
+		SiteSwitcher, SearchPanel, PageTree, PageToc, PageBreadcrumb, PagePager, NewSiteDialog, SettingsDialog,
 	},
 	setup() {
 		return {
@@ -107,7 +111,7 @@ export default {
 			mdiPlus, mdiCog, mdiBookOpenVariant, mdiFileDocumentOutline, mdiFileRemoveOutline,
 		}
 	},
-	data() { return { tree: [], html: '', toc: [], error: false, loading: false, showNew: false, showSettings: false, homePath: null } },
+	data() { return { tree: [], html: '', toc: [], searching: false, error: false, loading: false, showNew: false, showSettings: false, homePath: null } },
 	computed: {
 		routeSiteId() { return this.$route.params.siteId || null },
 		activeSiteId() { return this.routeSiteId || (this.store.current && this.store.current.id) || null },
@@ -195,7 +199,14 @@ export default {
 			// Both load their libraries only when the page needs them; not awaited.
 			decorateCode(this.$refs.article)
 			renderDiagrams(this.$refs.article)
-			this.scrollToHash()
+			// Opened from a search result: mark the terms and show the first one.
+			const q = this.$route.query.q
+			const hit = q ? highlightTerms(this.$refs.article, parseQuery(String(q))) : null
+			if (hit && !this.$route.hash) {
+				this.$nextTick(() => hit.scrollIntoView({ block: 'center' }))
+			} else {
+				this.scrollToHash()
+			}
 		},
 		/** Scrolls to the heading named by the URL hash, or to the top of the page. */
 		scrollToHash() {
@@ -296,6 +307,7 @@ export default {
 .mds-content :deep(ol) { list-style: decimal; }
 .mds-content :deep(ul ul) { list-style: circle; }
 .mds-content :deep(mark) { background: rgba(255, 208, 0, 0.35); color: inherit; border-radius: 3px; padding: 0.05em 0.2em; }
+.mds-content :deep(mark.mds-search-hit) { background: rgba(255, 140, 0, 0.45); padding: 0; border-radius: 2px; }
 .mds-content :deep(del) { color: var(--color-text-maxcontrast); }
 
 /* Tables */
