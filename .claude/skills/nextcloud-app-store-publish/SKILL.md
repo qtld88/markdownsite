@@ -107,6 +107,8 @@ grep -rniE "192\.168|password|secret|api[_-]?key|internal-hostname-pattern" <app
 COPYFILE_DISABLE=1 tar --format ustar -cf <app_id>-X.Y.Z.tar <app_id>/ && gzip -f <app_id>-X.Y.Z.tar
 gunzip -c <app_id>-X.Y.Z.tar.gz | strings | grep -ci paxheader   # must be 0
 tar -tzf <app_id>-X.Y.Z.tar.gz | awk -F/ '{print $1}' | sort -u  # must be exactly <app_id>
+# every lazy chunk must ship, not only markdownsite-main.js (since 1.4.0):
+[ "$(tar -tzf <app_id>-X.Y.Z.tar.gz | grep -c '/js/markdownsite-.*\.js$')" = "$(ls <source-repo>/js/markdownsite-*.js | wc -l)" ] && echo "chunks ok"
 ```
 
 Sign it — **always `-A`** (single-line output; a wrapped/multi-line signature makes the store reject it with `wrong signature length`):
