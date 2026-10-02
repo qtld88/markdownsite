@@ -18,8 +18,8 @@ Supports Obsidian-style wikilinks, embeds, and YAML frontmatter. Links resolve b
 
 ## Requirements
 
-- Nextcloud 28–31
-- PHP 8.1–8.4
+- Nextcloud 31–34
+- PHP 8.1–8.5
 
 ## Installation
 
@@ -34,12 +34,28 @@ occ app:enable markdownsite
 ## Development
 
 ```bash
-npm install
+npm ci
 npm run build      # or: npm run watch
+npm run lint
 
 composer install
 vendor/bin/phpunit
+composer run lint
 ```
+
+The PHP code is developed against the oldest supported Nextcloud API
+(`nextcloud/ocp` `dev-stable31`), so a newer API cannot slip in unnoticed.
+
+### Smoke test in Docker
+
+```bash
+scripts/smoke.sh 31    # or 34, or any nextcloud image tag
+scripts/smoke.sh stop
+```
+
+The script builds the app, starts a throwaway Nextcloud with the app enabled,
+uploads `tests/fixtures/smoke-site/` to the admin's files, creates a second
+user `reader`, and prints the URL. Passwords are in `.smoke/credentials.txt`.
 
 ## License
 

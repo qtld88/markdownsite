@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.2.0] - 2026-10-02
+
+### Changed
+- Supports Nextcloud 31 to 34 and PHP 8.1 to 8.5. Nextcloud 28–30 are no longer supported (the interface needs Nextcloud 31).
+
 ## [1.1.1] - 2026-10-02
 
 ### Fixed
