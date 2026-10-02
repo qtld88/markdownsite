@@ -642,7 +642,7 @@ docker run -d --name "$NAME" -p "$PORT:80" \
 	-e SQLITE_DATABASE=nextcloud \
 	-e NEXTCLOUD_ADMIN_USER=admin \
 	-e NEXTCLOUD_ADMIN_PASSWORD="$ADMIN_PASS" \
-	-e NEXTCLOUD_TRUSTED_DOMAINS="localhost 127.0.0.1" \
+	-e NEXTCLOUD_TRUSTED_DOMAINS=localhost \
 	"nextcloud:$VERSION" >/dev/null
 
 occ() { docker exec -u www-data "$NAME" php occ "$@"; }
