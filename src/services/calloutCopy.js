@@ -1,20 +1,6 @@
 import { translate as t } from '@nextcloud/l10n'
-import { mdiContentCopy, mdiCheck } from '@mdi/js'
-
-const SVG_NS = 'http://www.w3.org/2000/svg'
-
-function icon(path) {
-	const svg = document.createElementNS(SVG_NS, 'svg')
-	svg.setAttribute('viewBox', '0 0 24 24')
-	svg.setAttribute('width', '18')
-	svg.setAttribute('height', '18')
-	svg.setAttribute('aria-hidden', 'true')
-	const p = document.createElementNS(SVG_NS, 'path')
-	p.setAttribute('d', path)
-	p.setAttribute('fill', 'currentColor')
-	svg.appendChild(p)
-	return svg
-}
+import { mdiContentCopy } from '@mdi/js'
+import { copy, flashDone, icon } from './clipboard.js'
 
 /** HTML of the callout body, made self-contained for pasting into an email. */
 function bodyHtml(content) {
@@ -27,52 +13,6 @@ function bodyHtml(content) {
 	clone.querySelectorAll('mark').forEach((el) => el.setAttribute('style', 'background:#ffe97a'))
 	clone.querySelectorAll('input[type=checkbox]').forEach((el) => el.replaceWith(el.checked ? '☑ ' : '☐ '))
 	return clone.innerHTML
-}
-
-function legacyCopy(text, html) {
-	const holder = document.createElement(html ? 'div' : 'textarea')
-	holder.style.cssText = 'position:fixed;left:-9999px;top:0;white-space:pre-wrap'
-	if (html) {
-		holder.contentEditable = 'true'
-		holder.innerHTML = html
-	} else {
-		holder.value = text
-	}
-	document.body.appendChild(holder)
-	try {
-		if (html) {
-			const range = document.createRange()
-			range.selectNodeContents(holder)
-			const sel = window.getSelection()
-			sel.removeAllRanges()
-			sel.addRange(range)
-		} else {
-			holder.select()
-		}
-		return document.execCommand('copy')
-	} finally {
-		window.getSelection()?.removeAllRanges()
-		holder.remove()
-	}
-}
-
-async function copy(text, html = null) {
-	try {
-		if (html && window.ClipboardItem && navigator.clipboard?.write) {
-			await navigator.clipboard.write([new ClipboardItem({
-				'text/html': new Blob([html], { type: 'text/html' }),
-				'text/plain': new Blob([text], { type: 'text/plain' }),
-			})])
-			return true
-		}
-		if (!html && navigator.clipboard?.writeText) {
-			await navigator.clipboard.writeText(text)
-			return true
-		}
-	} catch (e) {
-		// fall through to the legacy path
-	}
-	return legacyCopy(text, html)
 }
 
 function closeMenus(except = null) {
@@ -118,15 +58,6 @@ function decorate(callout) {
 	menu.className = 'mds-callout-menu'
 	menu.hidden = true
 
-	const flash = () => {
-		button.replaceChildren(icon(mdiCheck))
-		button.classList.add('is-done')
-		setTimeout(() => {
-			button.replaceChildren(icon(mdiContentCopy))
-			button.classList.remove('is-done')
-		}, 1500)
-	}
-
 	const addItem = (label, handler) => {
 		const item = document.createElement('button')
 		item.type = 'button'
@@ -136,7 +67,7 @@ function decorate(callout) {
 			ev.stopPropagation()
 			menu.hidden = true
 			button.setAttribute('aria-expanded', 'false')
-			if (await handler()) { flash() }
+			if (await handler()) { flashDone(button) }
 		})
 		menu.appendChild(item)
 	}
