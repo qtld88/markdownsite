@@ -13,6 +13,8 @@ class WikilinkIndex {
 	private array $byAlias = [];
 	/** @var array<string,string> lowercased full path (no ext) => path */
 	private array $byPath = [];
+	/** @var array<string,string[]> path => alias list, as given */
+	private array $aliases;
 
 	/**
 	 * @param string[] $mdPaths           .md paths relative to root
@@ -20,6 +22,7 @@ class WikilinkIndex {
 	 */
 	public function __construct(array $mdPaths, array $aliases = []) {
 		$this->paths = $mdPaths;
+		$this->aliases = $aliases;
 		foreach ($mdPaths as $p) {
 			$noExt = $this->stripExt($p);
 			$this->byPath[mb_strtolower($noExt)] = $p;
@@ -64,6 +67,16 @@ class WikilinkIndex {
 			return $candidates[0];
 		}
 		return $this->pickNearest($currentDir, $candidates);
+	}
+
+	/** @return string[] all .md paths relative to root */
+	public function paths(): array {
+		return $this->paths;
+	}
+
+	/** @return array<string,string[]> path => aliases */
+	public function aliases(): array {
+		return $this->aliases;
 	}
 
 	/** @param string[] $candidates */
