@@ -3,6 +3,16 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.5.0] - 2026-10-02
+
+### Added
+- Search: a search field above the page tree finds pages in the current site or in all your sites. All words must appear; case and accents are ignored; `"quoted words"` search for an exact phrase. Results show where the words appear.
+- The page opened from a result highlights the words and scrolls to the first one.
+- Keyboard shortcut Ctrl+Shift+F (Cmd+Shift+F on a Mac) to search.
+
+### Notes
+- The first search on a large site prepares an index and can take a few seconds.
+
 ## [1.4.0] - 2026-10-02
 
 ### Added

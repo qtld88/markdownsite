@@ -14,6 +14,7 @@ Supports Obsidian-style wikilinks, embeds, and YAML frontmatter. Links resolve b
 - **Reveal-active-file navigation** — the tree auto-expands and scrolls to whichever page is open, with a per-user toggle to turn it off.
 - **Outline, breadcrumb, previous/next** — a sticky "On this page" outline, a breadcrumb, and previous/next links in tree order. Folder notes (`Folder/Folder.md`, `index.md`, `README.md`) open when their folder is clicked.
 - **Code and diagrams** — highlighted code blocks with a copy button, and Mermaid diagrams, loaded only on pages that use them.
+- **Search** — find pages by title, alias, heading or text in one site or all your sites, ignoring case and accents; matches are highlighted in the opened page.
 - **Themeable link appearance** — underline, bold, and colour are configurable per user, with a live preview.
 
 ![Settings](screenshots/settings.jpg)
