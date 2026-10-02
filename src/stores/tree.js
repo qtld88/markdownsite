@@ -6,7 +6,8 @@ import { defineStore } from 'pinia'
  * A path missing from openMap falls back to PageTree's reveal default.
  */
 export const useTreeStore = defineStore('tree', {
-	state: () => ({ openMap: {} }),
+	// dragging: path of the page or folder being dragged (editors only)
+	state: () => ({ openMap: {}, dragging: null }),
 	actions: {
 		setOpen(path, open) {
 			this.openMap = { ...this.openMap, [path]: open }
