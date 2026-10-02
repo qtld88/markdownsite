@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.3.0] - 2026-10-02
+
+### Added
+- Outline of the current page ("On this page") in a right-hand column, with the section in view highlighted. It can be collapsed; the choice is remembered.
+- Breadcrumb above each page and previous/next links below it, in tree order.
+- Links to a heading: `[[Page#Heading]]`, `[[Page#Heading|label]]`, `[[#Heading]]` and `[text](Page.md#heading)` open the page at that section.
+- Folder notes: a folder containing `Folder.md`, `index.md` or `README.md` opens that page when clicked.
+
 ## [1.2.0] - 2026-10-02
 
 ### Changed
