@@ -23,9 +23,10 @@ class IndexBuilder {
 	}
 
 	/**
-	 * The site's link index. Building it reads every page (for aliases), so
-	 * it is cached under the root folder's etag, which changes whenever any
-	 * file below it changes: an edit invalidates the cache by itself.
+	 * The site's link index, cached under the root folder's etag, which
+	 * changes whenever any file below it changes. On a miss, only the pages
+	 * whose etag changed since the last build are read again (for aliases):
+	 * an edit costs one file read, not one per page.
 	 */
 	public function build(Folder $root): WikilinkIndex {
 		$key = 'linkindex/' . $root->getId() . '/' . $root->getEtag();
@@ -34,21 +35,40 @@ class IndexBuilder {
 			return new WikilinkIndex($cached['paths'], $cached['aliases']);
 		}
 
-		$paths = $this->content->listMarkdownPaths($root);
+		$filesKey = 'linkfiles/' . $root->getId();
+		$known = $this->cache->get($filesKey);
+		$known = is_array($known) ? $known : [];
+		$files = [];
 		$aliases = [];
-		foreach ($paths as $path) {
-			try {
-				$raw = $this->content->getPageContent($root, $path);
-			} catch (\Throwable) {
-				continue;
+		foreach ($this->content->listMarkdownEtags($root) as $path => $etag) {
+			$path = (string) $path;
+			$entry = $known[$path] ?? null;
+			if (!is_array($entry) || ($entry['etag'] ?? null) !== $etag || !array_key_exists('aliases', $entry)) {
+				try {
+					$raw = $this->content->getPageContent($root, $path);
+				} catch (\Throwable) {
+					continue;
+				}
+				$entry = ['etag' => $etag, 'aliases' => $this->aliasesOf($raw)];
 			}
-			$fm = $this->frontmatter($raw);
-			if (isset($fm['aliases'])) {
-				$aliases[$path] = array_map('strval', is_array($fm['aliases']) ? $fm['aliases'] : [(string) $fm['aliases']]);
+			$files[$path] = $entry;
+			if (is_array($entry['aliases'])) {
+				$aliases[$path] = $entry['aliases'];
 			}
 		}
+		$paths = array_map('strval', array_keys($files));
+		$this->cache->set($filesKey, $files, self::TTL);
 		$this->cache->set($key, ['paths' => $paths, 'aliases' => $aliases], self::TTL);
 		return new WikilinkIndex($paths, $aliases);
+	}
+
+	/** @return list<string>|null null when the frontmatter has no `aliases` */
+	private function aliasesOf(string $raw): ?array {
+		$fm = $this->frontmatter($raw);
+		if (!isset($fm['aliases'])) {
+			return null;
+		}
+		return array_values(array_map('strval', is_array($fm['aliases']) ? $fm['aliases'] : [(string) $fm['aliases']]));
 	}
 
 	/** @return array<string,mixed> */

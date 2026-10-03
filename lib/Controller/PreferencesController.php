@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\MarkdownSite\Controller;
 
+use OCA\MarkdownSite\Service\UserPreferences;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\JSONResponse;
@@ -18,6 +19,7 @@ class PreferencesController extends Controller {
 		IRequest $request,
 		private IConfig $config,
 		private IUserSession $userSession,
+		private UserPreferences $prefs,
 	) {
 		parent::__construct('markdownsite', $request);
 	}
@@ -28,7 +30,7 @@ class PreferencesController extends Controller {
 		if ($user === null) {
 			return new JSONResponse(['error' => 'unauthenticated'], 401);
 		}
-		return new JSONResponse($this->read($user->getUID()));
+		return new JSONResponse($this->prefs->read($user->getUID()));
 	}
 
 	#[NoAdminRequired]
@@ -46,18 +48,6 @@ class PreferencesController extends Controller {
 		$this->config->setUserValue($uid, self::APP, 'reveal_active', $revealActive ? '1' : '0');
 		$this->config->setUserValue($uid, self::APP, 'toc_collapsed', $tocCollapsed ? '1' : '0');
 		$this->config->setUserValue($uid, self::APP, 'search_scope', $searchScope === 'all' ? 'all' : 'site');
-		return new JSONResponse($this->read($uid));
-	}
-
-	/** @return array{linkColor:string,linkUnderline:bool,linkBold:bool,revealActive:bool,tocCollapsed:bool,searchScope:string} */
-	private function read(string $uid): array {
-		return [
-			'linkColor' => $this->config->getUserValue($uid, self::APP, 'link_color', ''),
-			'linkUnderline' => $this->config->getUserValue($uid, self::APP, 'link_underline', '1') === '1',
-			'linkBold' => $this->config->getUserValue($uid, self::APP, 'link_bold', '1') === '1',
-			'revealActive' => $this->config->getUserValue($uid, self::APP, 'reveal_active', '1') === '1',
-			'tocCollapsed' => $this->config->getUserValue($uid, self::APP, 'toc_collapsed', '0') === '1',
-			'searchScope' => $this->config->getUserValue($uid, self::APP, 'search_scope', 'site') === 'all' ? 'all' : 'site',
-		];
+		return new JSONResponse($this->prefs->read($uid));
 	}
 }

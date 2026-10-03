@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+- Faster first opening: the site list and preferences arrive with the page, the tree is no longer loaded twice, and the page and the tree load at the same time.
+- Smaller startup script (about 28 % less to download): the settings and new-site dialogs, and the file picker, load when first opened.
+- The page tree and rendered pages are cached until a file of the site changes; after an edit, only the changed pages are read again to rebuild the link index.
+
 ## [2.0.0] - 2026-10-02
 
 ### Added

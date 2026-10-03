@@ -93,12 +93,13 @@
 			</div>
 		</NcAppContent>
 
-		<NewSiteDialog v-model:open="showNew" />
-		<SettingsDialog v-model:open="showSettings" />
+		<NewSiteDialog v-if="showNew" v-model:open="showNew" />
+		<SettingsDialog v-if="showSettings" v-model:open="showSettings" />
 	</NcContent>
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import NcContent from '@nextcloud/vue/components/NcContent'
 import NcAppNavigation from '@nextcloud/vue/components/NcAppNavigation'
 import NcAppContent from '@nextcloud/vue/components/NcAppContent'
@@ -129,8 +130,10 @@ import PageBreadcrumb from '../components/PageBreadcrumb.vue'
 import PagePager from '../components/PagePager.vue'
 import PageEditor from '../components/PageEditor.vue'
 import SearchPanel from '../components/SearchPanel.vue'
-import NewSiteDialog from '../components/NewSiteDialog.vue'
-import SettingsDialog from '../components/SettingsDialog.vue'
+
+// Dialogs load when first opened: they stay out of the startup bundle.
+const NewSiteDialog = defineAsyncComponent(() => import(/* webpackChunkName: "new-site" */ '../components/NewSiteDialog.vue'))
+const SettingsDialog = defineAsyncComponent(() => import(/* webpackChunkName: "settings" */ '../components/SettingsDialog.vue'))
 
 export default {
 	name: 'WikiView',
@@ -147,7 +150,7 @@ export default {
 			mdiPlus, mdiCog, mdiBookOpenVariant, mdiFileDocumentOutline, mdiFileRemoveOutline, mdiPencil,
 		}
 	},
-	data() { return { tree: [], html: '', toc: [], searching: false, editing: false, editAfterLoad: null, pages: [], error: false, loading: false, showNew: false, showSettings: false, homePath: null } },
+	data() { return { tree: [], html: '', toc: [], searching: false, editing: false, editAfterLoad: null, pages: [], error: false, loading: false, showNew: false, showSettings: false, homePath: null, treeJustLoaded: false } },
 	computed: {
 		routeSiteId() { return this.$route.params.siteId || null },
 		activeSiteId() { return this.routeSiteId || (this.store.current && this.store.current.id) || null },
@@ -211,14 +214,19 @@ export default {
 		async sync() {
 			if (!this.activeSiteId) { return }
 			this.store.setCurrent(this.activeSiteId)
-			await this.loadTree()
+			// Redirected to the home page right after loading the tree: don't load it twice.
+			const tree = this.treeJustLoaded ? null : this.loadTree()
+			this.treeJustLoaded = false
 			if (!this.currentPath) {
+				await tree
 				if (this.homePath) {
+					this.treeJustLoaded = true
 					this.$router.replace({ name: 'page', params: { siteId: this.activeSiteId, path: this.homePath } })
 				}
 				return
 			}
-			await this.loadPage()
+			// The page does not wait for the tree.
+			await Promise.all([tree, this.loadPage()])
 			this.scrollActiveIntoView()
 		},
 		scrollActiveIntoView() {

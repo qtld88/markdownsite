@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { loadState } from '@nextcloud/initial-state'
 import { getPrefs, savePrefs } from '../services/api.js'
 
 export const usePrefsStore = defineStore('prefs', {
@@ -21,7 +22,8 @@ export const usePrefsStore = defineStore('prefs', {
 	actions: {
 		async load() {
 			if (this.loaded) { return }
-			this.$patch(await getPrefs())
+			// Sent with the page; asked from the server only when missing.
+			this.$patch(loadState('markdownsite', 'prefs', null) ?? await getPrefs())
 			this.loaded = true
 		},
 		async save() {

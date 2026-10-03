@@ -22,7 +22,6 @@
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcButton from '@nextcloud/vue/components/NcButton'
-import { getFilePickerBuilder, FilePickerType } from '@nextcloud/dialogs'
 import { translate as t } from '@nextcloud/l10n'
 import { useSitesStore } from '../stores/sites.js'
 
@@ -35,6 +34,8 @@ export default {
 	data() { return { name: '', pickedFileId: null, pickedPath: '' } },
 	methods: {
 		async pickFolder() {
+			// Loaded on demand: the file picker is large and rarely used.
+			const { getFilePickerBuilder, FilePickerType } = await import('@nextcloud/dialogs')
 			const picker = getFilePickerBuilder(t('markdownsite', 'Pick the wiki folder'))
 				.setMimeTypeFilter(['httpd/unix-directory'])
 				.allowDirectories(true)

@@ -15,6 +15,8 @@ class IndexBuilderTest extends TestCase {
 	/** @var array<string,mixed> */
 	private array $store = [];
 	private int $reads = 0;
+	/** @var array<string,string> */
+	private array $etags = ['A.md' => 'a1', 'B.md' => 'b1'];
 
 	private function builder(): IndexBuilder {
 		$cache = $this->createMock(ICache::class);
@@ -26,7 +28,7 @@ class IndexBuilderTest extends TestCase {
 		$factory = $this->createMock(ICacheFactory::class);
 		$factory->method('createDistributed')->with('markdownsite')->willReturn($cache);
 		$content = $this->createMock(ContentService::class);
-		$content->method('listMarkdownPaths')->willReturn(['A.md', 'B.md']);
+		$content->method('listMarkdownEtags')->willReturnCallback(fn () => $this->etags);
 		$content->method('getPageContent')->willReturnCallback(function ($root, string $path): string {
 			$this->reads++;
 			return $path === 'A.md' ? "---\naliases: [Alpha, First]\n---\nbody" : 'no frontmatter';
@@ -57,10 +59,21 @@ class IndexBuilderTest extends TestCase {
 		$this->assertSame('A.md', $index->resolve('', 'Alpha'));
 	}
 
-	public function testNewEtagRebuilds(): void {
+	public function testNewRootEtagRereadsOnlyChangedPages(): void {
 		$builder = $this->builder();
 		$builder->build($this->root('e1'));
-		$builder->build($this->root('e2'));
-		$this->assertSame(4, $this->reads);
+		$this->etags['B.md'] = 'b2';
+		$index = $builder->build($this->root('e2'));
+		$this->assertSame(3, $this->reads);
+		$this->assertSame(['A.md' => ['Alpha', 'First']], $index->aliases());
+	}
+
+	public function testNewPageIsReadAndRemovedPageDropped(): void {
+		$builder = $this->builder();
+		$builder->build($this->root('e1'));
+		$this->etags = ['A.md' => 'a1', 'C.md' => 'c1'];
+		$index = $builder->build($this->root('e2'));
+		$this->assertSame(3, $this->reads);
+		$this->assertSame(['A.md', 'C.md'], $index->paths());
 	}
 }

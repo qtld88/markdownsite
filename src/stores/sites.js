@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
+import { loadState } from '@nextcloud/initial-state'
 import { listSites, createSite, deleteSite } from '../services/api.js'
+
+// The page arrives with the site list; it is used once, later loads ask the server.
+let initialUsed = false
 
 export const useSitesStore = defineStore('sites', {
 	state: () => ({ sites: [], loaded: false, currentId: null }),
@@ -8,7 +12,9 @@ export const useSitesStore = defineStore('sites', {
 	},
 	actions: {
 		async load() {
-			this.sites = await listSites()
+			const initial = initialUsed ? null : loadState('markdownsite', 'sites', null)
+			initialUsed = true
+			this.sites = initial ?? await listSites()
 			this.loaded = true
 		},
 		async add(payload) {

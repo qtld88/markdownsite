@@ -61,7 +61,7 @@ class ContentService {
 		if (!($base instanceof Folder)) {
 			return [];
 		}
-		return $this->listFolder($base, $rel, null);
+		return $this->listFolder($base, $base->getDirectoryListing(), $rel, null);
 	}
 
 	/**
@@ -69,8 +69,13 @@ class ContentService {
 	 * in this order: `<FolderName>.md`, `index.md`, `README.md`.
 	 */
 	public function folderNote(Folder $folder): ?string {
+		return $this->noteIn($folder, $folder->getDirectoryListing());
+	}
+
+	/** @param \OCP\Files\Node[] $listing $folder's directory listing */
+	private function noteIn(Folder $folder, array $listing): ?string {
 		$files = [];
-		foreach ($folder->getDirectoryListing() as $node) {
+		foreach ($listing as $node) {
 			if ($node instanceof File) {
 				$files[mb_strtolower($node->getName())] ??= $node->getName();
 			}
@@ -83,19 +88,24 @@ class ContentService {
 		return null;
 	}
 
-	/** @return array<int,array{name:string,path:string,type:string,children?:array,note?:string}> */
-	private function listFolder(Folder $base, string $rel, ?string $skip): array {
+	/**
+	 * Each folder is listed once: its listing gives both its note and its children.
+	 * @param \OCP\Files\Node[] $listing $base's directory listing
+	 * @return array<int,array{name:string,path:string,type:string,children?:array,note?:string}>
+	 */
+	private function listFolder(Folder $base, array $listing, string $rel, ?string $skip): array {
 		$out = [];
-		foreach ($base->getDirectoryListing() as $node) {
+		foreach ($listing as $node) {
 			$name = $node->getName();
 			if (str_starts_with($name, '.') || $name === $skip) {
 				continue;
 			}
 			$path = $rel === '' ? $name : $rel . '/' . $name;
 			if ($node instanceof Folder) {
-				$note = $this->folderNote($node);
+				$children = $node->getDirectoryListing();
+				$note = $this->noteIn($node, $children);
 				$entry = ['name' => $name, 'path' => $path, 'type' => 'dir',
-					'children' => $this->listFolder($node, $path, $note)];
+					'children' => $this->listFolder($node, $children, $path, $note)];
 				if ($note !== null) {
 					$entry['note'] = $path . '/' . $note;
 				}

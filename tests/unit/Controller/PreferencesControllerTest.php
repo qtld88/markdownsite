@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\MarkdownSite\Tests\Unit\Controller;
 
 use OCA\MarkdownSite\Controller\PreferencesController;
+use OCA\MarkdownSite\Service\UserPreferences;
 use OCP\IConfig;
 use OCP\IRequest;
 use OCP\IUser;
@@ -29,7 +30,7 @@ class PreferencesControllerTest extends TestCase {
 		$user->method('getUID')->willReturn('alice');
 		$session = $this->createMock(IUserSession::class);
 		$session->method('getUser')->willReturn($user);
-		return new PreferencesController($this->createMock(IRequest::class), $config, $session);
+		return new PreferencesController($this->createMock(IRequest::class), $config, $session, new UserPreferences($config));
 	}
 
 	public function testTocCollapsedDefaultsToFalse(): void {

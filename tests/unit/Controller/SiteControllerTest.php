@@ -12,6 +12,7 @@ use OCA\MarkdownSite\Db\SiteShare;
 use OCA\MarkdownSite\Db\SiteShareMapper;
 use OCA\MarkdownSite\Service\AccessService;
 use OCA\MarkdownSite\Service\ContentService;
+use OCA\MarkdownSite\Service\SiteLister;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\IGroupManager;
@@ -44,9 +45,9 @@ class SiteControllerTest extends TestCase {
 		$groups = $this->createMock(IGroupManager::class);
 		$groups->method('getUserGroupIds')->willReturn([]);
 		return new SiteController(
-			$this->createMock(IRequest::class), $this->sites, $this->shares, $session, $groups,
-			$this->createMock(IRootFolder::class), $this->createMock(SearchMapper::class),
-			new AccessService(), $this->content,
+			$this->createMock(IRequest::class), $this->sites, $this->shares, $session,
+			$this->createMock(IRootFolder::class), $this->createMock(SearchMapper::class), $this->content,
+			new SiteLister($this->sites, $this->shares, $groups, new AccessService(), $this->content),
 		);
 	}
 

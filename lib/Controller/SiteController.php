@@ -11,11 +11,11 @@ use OCA\MarkdownSite\Db\SiteShare;
 use OCA\MarkdownSite\Db\SiteShareMapper;
 use OCA\MarkdownSite\Service\AccessService;
 use OCA\MarkdownSite\Service\ContentService;
+use OCA\MarkdownSite\Service\SiteLister;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\Files\IRootFolder;
-use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IUserSession;
 
@@ -25,11 +25,10 @@ class SiteController extends Controller {
 		private SiteMapper $sites,
 		private SiteShareMapper $shares,
 		private IUserSession $userSession,
-		private IGroupManager $groupManager,
 		private IRootFolder $rootFolder,
 		private SearchMapper $searchIndex,
-		private AccessService $access,
 		private ContentService $content,
+		private SiteLister $lister,
 	) {
 		parent::__construct('markdownsite', $request);
 	}
@@ -40,24 +39,7 @@ class SiteController extends Controller {
 		if ($user === null) {
 			return new JSONResponse(['error' => 'unauthenticated'], 401);
 		}
-		$uid = $user->getUID();
-		$groups = $this->groupManager->getUserGroupIds($user);
-		$out = [];
-		foreach ($this->sites->findVisible($uid, $groups) as $site) {
-			$dto = $site->toArray();
-			$dto['isOwner'] = $site->getOwnerUid() === $uid;
-			if (!$dto['isOwner']) {
-				// Don't leak the owner's uid to a share recipient.
-				unset($dto['ownerUid']);
-			}
-			$role = $this->access->roleFor($site, $uid, $groups, $this->shares->findBySite($site->getId()));
-			$dto['role'] = $role;
-			// Editing needs an editor role AND a folder the owner can write to.
-			$root = AccessService::isEditorRole($role) ? $this->content->resolveRoot($site) : null;
-			$dto['writable'] = $root !== null && $root->isUpdateable();
-			$out[] = $dto;
-		}
-		return new JSONResponse($out);
+		return new JSONResponse($this->lister->visibleTo($user));
 	}
 
 	#[NoAdminRequired]

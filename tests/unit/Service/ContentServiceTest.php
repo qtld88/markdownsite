@@ -117,6 +117,17 @@ class ContentServiceTest extends TestCase {
 		], $this->content()->listTree($root));
 	}
 
+	public function testListTreeListsEachFolderOnce(): void {
+		$sub = $this->createMock(Folder::class);
+		$sub->method('getName')->willReturn('Sub');
+		$sub->expects($this->once())->method('getDirectoryListing')->willReturn([$this->file('Sub.md'), $this->file('A.md')]);
+		$root = $this->createMock(Folder::class);
+		$root->method('getName')->willReturn('Wiki');
+		$root->expects($this->once())->method('getDirectoryListing')->willReturn([$sub]);
+		$tree = $this->content()->listTree($root);
+		$this->assertSame('Sub/Sub.md', $tree[0]['note']);
+	}
+
 	public function testListMarkdownEtagsWalksFoldersWithoutReadingFiles(): void {
 		$page = fn (string $name, string $etag) => $this->fileWithEtag($name, $etag);
 		$deep = $this->folder('Deep', [$page('Inner.md', 'e3')]);
