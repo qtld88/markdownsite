@@ -3,7 +3,7 @@
  * editor's rendered blocks (PageEditor), so both look the same.
  */
 .mds-content {
-	max-width: 760px;
+	max-width: var(--mds-measure, 760px);
 	margin: 0 auto;
 	padding: 16px 0 0;
 	line-height: 1.6;

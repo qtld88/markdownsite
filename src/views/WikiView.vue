@@ -421,8 +421,10 @@ export default {
 .mds-page-header .mds-crumbs { flex: 1 1 auto; min-width: 0; }
 /* Page layout: main column (breadcrumb, article, pager) + sticky outline on wide
    screens. The left padding keeps the breadcrumb clear of the navigation toggle. */
-.mds-page { display: flex; justify-content: center; align-items: flex-start; gap: 24px; padding: 0 24px 0 52px; }
-.mds-main { flex: 0 1 760px; min-width: 0; padding: 24px 0 96px; }
+/* --mds-measure caps the text width (article and editor). Collapsing the outline
+   hands its 196px to the text, so the page keeps the same overall footprint. */
+.mds-page { --mds-measure: 760px; display: flex; justify-content: center; align-items: flex-start; gap: 24px; padding: 0 24px 0 52px; }
+.mds-main { flex: 0 1 var(--mds-measure); min-width: 0; padding: 24px 0 96px; }
 .mds-toc-wide { flex: 0 0 240px; position: sticky; top: 0; max-height: 100vh; overflow-y: auto; }
 .mds-page--toc-collapsed .mds-toc-wide { flex-basis: 44px; }
 @media (max-width: 1023px) {
@@ -430,5 +432,6 @@ export default {
 }
 @media (min-width: 1024px) {
 	.mds-toc-narrow { display: none; }
+	.mds-page--toc-collapsed { --mds-measure: 956px; }
 }
 </style>

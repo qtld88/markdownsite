@@ -175,5 +175,5 @@ export default {
 .mds-editor-banner--warning { background: rgba(236, 117, 0, 0.12); border: 1px solid rgba(236, 117, 0, 0.4); }
 .mds-editor-banner--error { color: var(--color-error); }
 .mds-editor-loading { display: flex; justify-content: center; padding: 32px; }
-.mds-editor-host { max-width: 760px; min-height: 50vh; margin: 0 auto; padding-top: 16px; }
+.mds-editor-host { max-width: var(--mds-measure, 760px); min-height: 50vh; margin: 0 auto; padding-top: 16px; }
 </style>
