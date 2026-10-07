@@ -32,6 +32,8 @@ export const createPage = (siteId, path) => axios.post(base(`/s/${siteId}/pages`
 export const createFolder = (siteId, path) => axios.post(base(`/s/${siteId}/folders`), { path }).then(r => r.data)
 export const getBacklinks = (siteId, path, to) => axios.get(base(`/s/${siteId}/backlinks/${encPath(path)}`), { params: { to } }).then(r => r.data)
 export const moveNode = (siteId, from, to, updateLinks) => axios.post(base(`/s/${siteId}/move`), { from, to, updateLinks }).then(r => r.data)
+export const checkLinks = (siteId) => axios.get(base(`/s/${siteId}/links`)).then(r => r.data)
+export const repairLinks = (siteId, fixes) => axios.post(base(`/s/${siteId}/links/repair`), { fixes }).then(r => r.data)
 export const deleteNode = (siteId, path) => axios.delete(base(`/s/${siteId}/node/${encPath(path)}`)).then(r => r.data)
 export const uploadAttachment = (siteId, page, file) => {
 	const form = new FormData()

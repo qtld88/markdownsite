@@ -8,6 +8,7 @@ use OCA\MarkdownSite\Controller\EditController;
 use OCA\MarkdownSite\Db\Site;
 use OCA\MarkdownSite\Service\AttachmentLocator;
 use OCA\MarkdownSite\Service\ContentService;
+use OCA\MarkdownSite\Service\LinkChecker;
 use OCA\MarkdownSite\Service\LinkUpdater;
 use OCA\MarkdownSite\Service\PageRenderer;
 use OCA\MarkdownSite\Service\SearchIndexer;
@@ -26,6 +27,7 @@ class EditControllerTest extends TestCase {
 	private Folder&MockObject $root;
 	private ContentService&MockObject $content;
 	private LinkUpdater&MockObject $links;
+	private LinkChecker&MockObject $linkChecker;
 	private SearchIndexer&MockObject $search;
 	private IRequest&MockObject $request;
 	private string $role = 'editor';
@@ -43,6 +45,7 @@ class EditControllerTest extends TestCase {
 			return $this->nodes[trim($path, '/')] ?? throw new NotFoundException($path);
 		});
 		$this->links = $this->createMock(LinkUpdater::class);
+		$this->linkChecker = $this->createMock(LinkChecker::class);
 		$this->search = $this->createMock(SearchIndexer::class);
 		$this->request = $this->createMock(IRequest::class);
 	}
@@ -52,7 +55,7 @@ class EditControllerTest extends TestCase {
 		$resolver->method('resolve')->willReturnCallback(fn () => new SiteContext($this->site, $this->root, $this->role));
 		return new EditController(
 			$this->request, $resolver, $this->content, $this->links, new AttachmentLocator(),
-			$this->search, $this->createMock(PageRenderer::class),
+			$this->search, $this->createMock(PageRenderer::class), $this->linkChecker,
 		);
 	}
 
@@ -121,6 +124,31 @@ class EditControllerTest extends TestCase {
 
 		$this->file('Guides/Idea.md');
 		$this->assertSame(409, $this->controller()->createPage(4, 'Guides/Idea.md')->getStatus());
+	}
+
+	public function testCheckLinksReturnsTheCheckerResult(): void {
+		$result = ['broken' => [], 'pages' => 3, 'truncated' => false];
+		$this->linkChecker->method('check')->with($this->root)->willReturn($result);
+		$this->assertSame($result, $this->controller()->checkLinks(4)->getData());
+	}
+
+	public function testRepairLinksFixesValidEntriesAndReindexesTouchedPages(): void {
+		$this->linkChecker->expects($this->once())->method('repair')
+			->with($this->root, [['page' => 'Home.md', 'line' => 2, 'offset' => 8]])
+			->willReturn(['fixed' => 1, 'failed' => [], 'pages' => ['Home.md']]);
+		$this->search->expects($this->once())->method('indexPage')->with($this->site, $this->root, 'Home.md');
+		$response = $this->controller()->repairLinks(4, [
+			['page' => '/Home.md', 'line' => 2, 'offset' => 8],
+			['page' => 'Bad.md', 'line' => '2', 'offset' => 1],
+			'junk',
+		]);
+		$this->assertSame(['fixed' => 1, 'failed' => []], $response->getData());
+	}
+
+	public function testReaderCannotRepairLinks(): void {
+		$this->role = 'reader';
+		$this->linkChecker->expects($this->never())->method('repair');
+		$this->assertSame(403, $this->controller()->repairLinks(4, [])->getStatus());
 	}
 
 	public function testInvalidNamesAreRefused(): void {

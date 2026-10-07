@@ -50,6 +50,8 @@
 			</NcButton>
 		</NcAppSettingsSection>
 
+		<LinkCheckSettings />
+
 		<SharingSettings />
 	</NcAppSettingsDialog>
 </template>
@@ -62,11 +64,12 @@ import NcColorPicker from '@nextcloud/vue/components/NcColorPicker'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import { usePrefsStore } from '../stores/prefs.js'
+import LinkCheckSettings from './LinkCheckSettings.vue'
 import SharingSettings from './SharingSettings.vue'
 
 export default {
 	name: 'SettingsDialog',
-	components: { NcAppSettingsDialog, NcAppSettingsSection, NcCheckboxRadioSwitch, NcColorPicker, NcButton, SharingSettings },
+	components: { NcAppSettingsDialog, NcAppSettingsSection, NcCheckboxRadioSwitch, NcColorPicker, NcButton, LinkCheckSettings, SharingSettings },
 	props: { open: { type: Boolean, default: false } },
 	emits: ['update:open'],
 	setup() { return { prefs: usePrefsStore(), t } },

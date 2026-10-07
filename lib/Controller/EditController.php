@@ -6,6 +6,7 @@ namespace OCA\MarkdownSite\Controller;
 
 use OCA\MarkdownSite\Service\AttachmentLocator;
 use OCA\MarkdownSite\Service\ContentService;
+use OCA\MarkdownSite\Service\LinkChecker;
 use OCA\MarkdownSite\Service\LinkUpdater;
 use OCA\MarkdownSite\Service\PageRenderer;
 use OCA\MarkdownSite\Service\SearchIndexer;
@@ -37,6 +38,7 @@ class EditController extends Controller {
 		private AttachmentLocator $attachments,
 		private SearchIndexer $search,
 		private PageRenderer $renderer,
+		private LinkChecker $linkChecker,
 	) {
 		parent::__construct('markdownsite', $request);
 	}
@@ -147,6 +149,34 @@ class EditController extends Controller {
 				'updated' => count($plan) - count($failed),
 				'failed' => $failed,
 			]);
+		});
+	}
+
+	/** Links that point at no page, each with the page it probably meant. */
+	#[NoAdminRequired]
+	public function checkLinks(int $siteId): JSONResponse {
+		return $this->guard($siteId, fn (SiteContext $ctx) => new JSONResponse($this->linkChecker->check($ctx->root)));
+	}
+
+	/**
+	 * Applies the suggested target of the given broken links.
+	 *
+	 * @param list<array{page?: mixed, line?: mixed, offset?: mixed}> $fixes
+	 */
+	#[NoAdminRequired]
+	public function repairLinks(int $siteId, array $fixes): JSONResponse {
+		return $this->guard($siteId, function (SiteContext $ctx) use ($fixes): JSONResponse {
+			$valid = [];
+			foreach ($fixes as $fix) {
+				if (is_array($fix) && is_string($fix['page'] ?? null) && is_int($fix['line'] ?? null) && is_int($fix['offset'] ?? null)) {
+					$valid[] = ['page' => trim($fix['page'], '/'), 'line' => $fix['line'], 'offset' => $fix['offset']];
+				}
+			}
+			$result = $this->linkChecker->repair($ctx->root, $valid);
+			foreach ($result['pages'] as $page) {
+				$this->search->indexPage($ctx->site, $ctx->root, $page);
+			}
+			return new JSONResponse(['fixed' => $result['fixed'], 'failed' => $result['failed']]);
 		});
 	}
 

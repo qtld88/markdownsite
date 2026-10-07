@@ -28,6 +28,8 @@ return [
 		['name' => 'edit#createFolder', 'url' => '/s/{siteId}/folders', 'verb' => 'POST'],
 		['name' => 'edit#backlinks', 'url' => '/s/{siteId}/backlinks/{path}', 'verb' => 'GET',
 			'requirements' => ['path' => '.+']],
+		['name' => 'edit#checkLinks', 'url' => '/s/{siteId}/links', 'verb' => 'GET'],
+		['name' => 'edit#repairLinks', 'url' => '/s/{siteId}/links/repair', 'verb' => 'POST'],
 		['name' => 'edit#move', 'url' => '/s/{siteId}/move', 'verb' => 'POST'],
 		['name' => 'edit#delete', 'url' => '/s/{siteId}/node/{path}', 'verb' => 'DELETE',
 			'requirements' => ['path' => '.+']],

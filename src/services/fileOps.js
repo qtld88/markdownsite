@@ -98,7 +98,7 @@ export async function moveTo(siteId, from, to) {
 		const { count, pages } = await getBacklinks(siteId, from, to)
 		let updateLinks = false
 		if (count > 0) {
-			const answer = await spawnDialog(MoveDialog, { count, pages })
+			const answer = await spawnDialog(MoveDialog, { from, to, count, pages })
 			if (!answer) {
 				return null
 			}

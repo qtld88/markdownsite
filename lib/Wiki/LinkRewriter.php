@@ -13,9 +13,9 @@ namespace OCA\MarkdownSite\Wiki;
  * it is. Code (fenced, indented, inline) is never modified.
  */
 class LinkRewriter {
-	private const WIKILINK = '/(!?)\[\[([^\]|]+)(\|[^\]]*)?\]\]/';
+	public const WIKILINK = '/(!?)\[\[([^\]|]+)(\|[^\]]*)?\]\]/';
 	// [text](destination "title") and ![alt](destination); destination may be <...>
-	private const MDLINK = '/(!?\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*)(<[^>\n]*>|[^\s)<]+)/';
+	public const MDLINK = '/(!?\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*)(<[^>\n]*>|[^\s)<]+)/';
 
 	private PathResolver $paths;
 
