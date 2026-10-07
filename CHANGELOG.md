@@ -3,6 +3,15 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.2.0] - 2026-10-07
+
+### Added
+- Settings has a "Links" section: it lists links that point to no page and fixes the ones where exactly one page clearly matches.
+- The "Update links?" dialog names the item being renamed or moved and lists the pages that link to it. Its buttons are named after the action.
+
+### Fixed
+- A Markdown link to a heading written as the heading text, such as `[text](<#My heading>)`, now scrolls to that heading.
+
 ## [2.1.0] - 2026-10-03
 
 ### Changed
