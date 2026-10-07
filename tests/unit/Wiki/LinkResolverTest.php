@@ -82,10 +82,10 @@ class LinkResolverTest extends TestCase {
 		$this->assertSame('second-part', $t->fragment);
 	}
 
-	public function testMarkdownLinkKeepsExplicitFragment(): void {
+	public function testMarkdownLinkFragmentIsSluggedLikeTheHeadingId(): void {
 		$t = $this->resolver()->resolveHref('OUTILS', '../LEXIQUE/Bitwarden.md#Keep_As-Is');
 		$this->assertSame('page', $t->kind);
 		$this->assertSame('LEXIQUE/Bitwarden.md', $t->path);
-		$this->assertSame('Keep_As-Is', $t->fragment);
+		$this->assertSame('keepas-is', $t->fragment);
 	}
 }

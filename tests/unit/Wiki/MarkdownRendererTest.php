@@ -22,6 +22,12 @@ class MarkdownRendererTest extends TestCase {
 		return new MarkdownRenderer($resolver, $urls);
 	}
 
+	public function testPlainLinkFragmentIsSluggedLikeTheHeading(): void {
+		$out = $this->renderer()->render("## Vérifier que c'est bon\n\n[a](<#Vérifier que c'est bon>) [b](<../LEXIQUE/Bitwarden.md#Vérifier que c'est bon>)", 'OUTILS');
+		$this->assertStringContainsString('<a href="#vérifier-que-cest-bon">a</a>', $out['html']);
+		$this->assertStringContainsString('href="/PAGE/LEXIQUE/Bitwarden.md#vérifier-que-cest-bon"', $out['html']);
+	}
+
 	public function testRewritesRelativeMdLink(): void {
 		$out = $this->renderer()->render("[BW](../LEXIQUE/Bitwarden.md)", 'OUTILS');
 		$this->assertStringContainsString('href="/PAGE/LEXIQUE/Bitwarden.md"', $out['html']);

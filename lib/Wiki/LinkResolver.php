@@ -29,10 +29,15 @@ class LinkResolver {
 	/** Standard markdown link/image href: [text](href) or ![alt](href). */
 	public function resolveHref(string $currentDir, string $href): LinkTarget {
 		$href = trim($href);
+		if (str_starts_with($href, '#')) {
+			$fragment = $this->fragmentSlug(substr($href, 1));
+			return $fragment === '' ? new LinkTarget('external', '#') : new LinkTarget('anchor', '', $fragment);
+		}
 		if ($this->isExternal($href)) {
 			return new LinkTarget('external', $href);
 		}
 		[$href, $fragment] = $this->splitFragment($href);
+		$fragment = $this->fragmentSlug($fragment);
 		try {
 			$resolved = $this->paths->resolve($currentDir, rawurldecode($href));
 		} catch (PathTraversalException) {
@@ -94,6 +99,15 @@ class LinkResolver {
 		return $this->slugs->normalize($last);
 	}
 
+	/**
+	 * Fragment of a [text](page#Heading) link as a heading id. Headings get
+	 * slug ids, so a fragment written as the heading text, with spaces or
+	 * accents, or percent-encoded, is slugged the same way.
+	 */
+	private function fragmentSlug(string $fragment): string {
+		return $this->slugs->normalize(rawurldecode($fragment));
+	}
+
 	/** @return array{0: string, 1: string} [before '#', after '#'] */
 	private function splitFragment(string $href): array {
 		$pos = strpos($href, '#');
@@ -102,8 +116,7 @@ class LinkResolver {
 
 	private function isExternal(string $href): bool {
 		return (bool) preg_match('#^[a-z][a-z0-9+.-]*://#i', $href)
-			|| str_starts_with($href, 'mailto:')
-			|| str_starts_with($href, '#');
+			|| str_starts_with($href, 'mailto:');
 	}
 
 	private function isMarkdown(string $path): bool {
