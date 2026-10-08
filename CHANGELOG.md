@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.2.1] - 2026-10-08
+
+### Fixed
+- In the editor, Tab inserts a tab instead of moving the focus to the next button or link. Shift-Tab removes one indent level. Escape still leaves edit mode.
+
 ## [2.2.0] - 2026-10-07
 
 ### Added
