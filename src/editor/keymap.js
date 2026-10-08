@@ -1,5 +1,6 @@
 import { EditorSelection } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
+import { indentLess, insertTab } from '@codemirror/commands'
 
 /** Wraps each selection in `marker` (or removes it when already wrapped). */
 export function toggleWrap(marker) {
@@ -32,12 +33,13 @@ export function insertLink(view) {
 	return true
 }
 
-/** Cmd/Ctrl+B, I, K and Escape (leave edit mode). */
+/** Cmd/Ctrl+B, I, K, Tab/Shift-Tab (indent instead of moving focus) and Escape (leave edit mode). */
 export function editorKeymap({ onExit }) {
 	return keymap.of([
 		{ key: 'Mod-b', run: toggleWrap('**') },
 		{ key: 'Mod-i', run: toggleWrap('*') },
 		{ key: 'Mod-k', run: insertLink },
+		{ key: 'Tab', run: insertTab, shift: indentLess },
 		{ key: 'Escape', run: () => { onExit(); return true } },
 	])
 }
