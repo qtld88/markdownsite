@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.3.0] - 2026-10-22
 
 ### Added
 - In the editor, select some text and click "Link to a page" (or press Cmd/Ctrl+K) to pick the target page from a searchable list of the site's pages. The text becomes a `[[wikilink|text]]`.
