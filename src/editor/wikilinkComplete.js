@@ -1,3 +1,5 @@
+import { linkTarget, titleCounts } from '../services/pageLinks.js'
+
 /**
  * `[[` completion over the site's pages and aliases.
  *
@@ -11,16 +13,11 @@ export function wikilinkCompletion(getPages) {
 		}
 		const from = match.from + match.text.indexOf('[[') + 2
 		const pages = getPages() || []
-		const titleCount = new Map()
-		for (const page of pages) {
-			const key = page.title.toLowerCase()
-			titleCount.set(key, (titleCount.get(key) || 0) + 1)
-		}
+		const counts = titleCounts(pages)
 		const options = []
 		for (const page of pages) {
 			const folder = page.path.includes('/') ? page.path.slice(0, page.path.lastIndexOf('/')) : ''
-			// A title shared by several pages needs the path to stay unambiguous.
-			const target = titleCount.get(page.title.toLowerCase()) > 1 ? page.path.replace(/\.md$/i, '') : page.title
+			const target = linkTarget(page, counts)
 			options.push({ label: page.title, detail: folder, apply: applyLink(target), type: 'text' })
 			for (const alias of page.aliases || []) {
 				options.push({ label: alias, detail: `→ ${page.title}`, apply: applyLink(alias), type: 'text' })

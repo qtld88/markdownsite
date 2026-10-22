@@ -31,6 +31,8 @@
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import { translate as t } from '@nextcloud/l10n'
+import { spawnDialog } from '@nextcloud/vue/functions/dialog'
+import LinkPickerDialog from './LinkPickerDialog.vue'
 import { createPage, getSource, renderMarkdown, savePage, uploadAttachment } from '../services/api.js'
 import { loadChunk } from '../services/chunks.js'
 import { createAutosave, readDraft } from '../editor/autosave.js'
@@ -114,6 +116,7 @@ export default {
 			onExit: () => this.$emit('exit'),
 			onFollow: link => this.$emit('follow', link),
 			onError: (error) => this.showError(error),
+			askLinkTarget: selection => spawnDialog(LinkPickerDialog, { pages: this.pages, selection }),
 		})
 		this.view.focus()
 	},

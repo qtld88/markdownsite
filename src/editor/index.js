@@ -13,6 +13,7 @@ import { blockWidgets } from './blockWidgets.js'
 import { wikilinkCompletion } from './wikilinkComplete.js'
 import { attachments } from './attachments.js'
 import { editorKeymap } from './keymap.js'
+import { pickLink, selectionLinkButton } from './linkPicker.js'
 
 const markdownStyle = HighlightStyle.define([
 	{ tag: tags.strong, fontWeight: '700' },
@@ -49,6 +50,13 @@ const theme = EditorView.theme({
 		boxShadow: 'none', background: 'transparent', cursor: 'pointer', borderRadius: 'var(--border-radius-large, 8px)',
 	},
 	'.mds-block-widget:hover': { outline: '1px dashed var(--color-border-dark, var(--color-border))' },
+	'.cm-tooltip.cm-tooltip-above:has(.mds-link-tip)': { border: 'none', background: 'transparent' },
+	'.mds-link-tip': {
+		padding: '4px 10px', border: '1px solid var(--color-border-dark, var(--color-border))', borderRadius: 'var(--border-radius-element, 8px)',
+		background: 'var(--color-main-background)', color: 'var(--color-main-text)', fontSize: '0.85em', cursor: 'pointer',
+		boxShadow: '0 1px 4px var(--color-box-shadow, rgba(0, 0, 0, 0.2))',
+	},
+	'.mds-link-tip:hover': { background: 'var(--color-background-hover)' },
 	'.mds-frontmatter': { margin: '0', fontSize: '0.9em', color: 'var(--color-text-maxcontrast)' },
 })
 
@@ -80,9 +88,11 @@ function linkAt(view, pos) {
  * @param {Function} options.onExit Escape
  * @param {Function} options.onFollow ({wikilink}|{href}) on Ctrl/Cmd+click of a link
  * @param {Function} options.onError (error) for failed uploads
+ * @param {Function} [options.askLinkTarget] (selectedText) => Promise<string|null> page picker for Cmd/Ctrl+K
  * @return {EditorView}
  */
-export function createEditor({ parent, doc, getPages, render, upload, onChange, onExit, onFollow, onError }) {
+export function createEditor({ parent, doc, getPages, render, upload, onChange, onExit, onFollow, onError, askLinkTarget }) {
+	const linkCommand = askLinkTarget ? pickLink(askLinkTarget) : undefined
 	return new EditorView({
 		parent,
 		state: EditorState.create({
@@ -96,7 +106,8 @@ export function createEditor({ parent, doc, getPages, render, upload, onChange, 
 				autocompletion({ override: [wikilinkCompletion(getPages)] }),
 				attachments(upload, onError),
 				keymap.of([...defaultKeymap, ...historyKeymap]),
-				editorKeymap({ onExit }),
+				editorKeymap({ onExit, linkCommand }),
+				...(linkCommand ? [selectionLinkButton(linkCommand)] : []),
 				EditorView.lineWrapping,
 				theme,
 				EditorView.updateListener.of((update) => {

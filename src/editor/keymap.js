@@ -33,12 +33,12 @@ export function insertLink(view) {
 	return true
 }
 
-/** Cmd/Ctrl+B, I, K, Tab/Shift-Tab (indent instead of moving focus) and Escape (leave edit mode). */
-export function editorKeymap({ onExit }) {
+/** Cmd/Ctrl+B, I, K, Tab/Shift-Tab (indent instead of moving focus) and Escape (leave edit mode). `linkCommand` replaces the bare `[]()` link of Cmd/Ctrl+K. */
+export function editorKeymap({ onExit, linkCommand = insertLink }) {
 	return keymap.of([
 		{ key: 'Mod-b', run: toggleWrap('**') },
 		{ key: 'Mod-i', run: toggleWrap('*') },
-		{ key: 'Mod-k', run: insertLink },
+		{ key: 'Mod-k', run: linkCommand },
 		{ key: 'Tab', run: insertTab, shift: indentLess },
 		{ key: 'Escape', run: () => { onExit(); return true } },
 	])
